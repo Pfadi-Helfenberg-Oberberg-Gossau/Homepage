@@ -1,0 +1,100 @@
+---
+const navItems = [
+  { label: 'Startseite', href: '/' },
+  { label: 'Wochenprogramm', href: '/wochenprogramm' },
+  { label: 'Stufen', href: '/stufen' },
+  { label: 'Über uns', href: '/ueber-uns' },
+  { label: 'Mitmachen', href: '/mitmachen' },
+  { label: 'Downloads', href: '/downloads' },
+  { label: 'Kontakt', href: '/kontakt' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header>
+  <div class="container">
+    <a href="/" class="logo">
+      <img src="/logo.png" alt="Pfadi Gossau" height="60" />
+    </a>
+    <nav>
+      <ul>
+        {navItems.map(item => (
+          <li>
+            <a 
+              href={item.href}
+              class={currentPath === item.href ? 'active' : ''}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <button class="menu-toggle" aria-label="Menü öffnen">
+      ☰
+    </button>
+  </div>
+</header>
+
+<style>
+  header {
+    background-color: var(--color-primary);
+    padding: var(--spacing-sm) 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo img {
+    height: 160px;
+    width: auto;
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    color: var(--color-text-light);
+    font-weight: 500;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s;
+  }
+
+  nav a:hover,
+  nav a.active {
+    background-color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    nav {
+      display: none;
+    }
+
+    .menu-toggle {
+      display: block;
+    }
+  }
+</style>

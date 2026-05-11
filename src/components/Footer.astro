@@ -1,0 +1,76 @@
+---
+---
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h3>Pfadi Gossau</h3>
+        <p>Helfenberg-Oberberg</p>
+        <p>9200 Gossau SG</p>
+      </div>
+      <div>
+        <h3>Kontakt</h3>
+        <p><a href="mailto:info@pfadigossau.ch">info@pfadigossau.ch</a></p>
+      </div>
+      <div>
+        <h3>Folgt uns</h3>
+        <div class="social">
+          <a href="#" aria-label="Facebook">Facebook</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© {new Date().getFullYear()} Pfadi Gossau. Alle Rechte vorbehalten.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    padding: var(--spacing-lg) 0 var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  h3 {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-sm);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  p, a {
+    color: var(--color-text-light);
+    opacity: 0.85;
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+
+  a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  .social {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--color-accent);
+    padding-top: var(--spacing-sm);
+    opacity: 0.7;
+    font-size: 0.8rem;
+  }
+</style>

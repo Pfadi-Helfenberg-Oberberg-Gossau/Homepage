@@ -1,0 +1,101 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import PersonCard from '@/components/PersonCard.astro';
+import client from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+export async function getStaticPaths() {
+  const stufen = await client.request(readItems('stufen', {
+    filter: { status: { _eq: 'published' } },
+    fields: ['id', 'name', 'age_range', 'description']
+  }));
+
+    console.log('stufen from directus:', JSON.stringify(stufen, null, 2))
+
+  return stufen.map(stufe => ({
+    params: { slug: stufe.name.toLowerCase() },
+    props: { stufe }
+  }));
+}
+
+const { stufe } = Astro.props;
+
+// fetch Stufenleitung
+const stufenleitung = await client.request(readItems('stufenleitung', {
+  filter: {
+    stufe: { _eq: stufe.id },
+    status: { _eq: 'published' }
+  },
+  fields: ['sort', 'person.first_name', 'person.last_name', 'person.nickname', 'person.email', 'person.photo'],
+  sort: ['sort']
+}));
+
+// fetch Leitpersonen
+const leitpersonen = await client.request(readItems('leitpersonen', {
+  filter: {
+    stufe: { _eq: stufe.id },
+    status: { _eq: 'published' }
+  },
+  fields: ['sort', 'person.first_name', 'person.last_name', 'person.nickname', 'person.photo'],
+  sort: ['sort']
+}));
+---
+
+<Base title={stufe.name}>
+  <PageHeader title={stufe.name} subtitle={stufe.age_range} />
+  <div class="container">
+    {stufe.description && <p class="description">{stufe.description}</p>}
+
+    {stufenleitung.length > 0 && (
+      <section>
+        <h2>Stufenleitung</h2>
+        <div class="team-grid">
+          {stufenleitung.map(r => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              email={r.person.email}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {leitpersonen.length > 0 && (
+      <section>
+        <h2>Leitpersonen</h2>
+        <div class="team-grid">
+          {leitpersonen.map(r => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</Base>
+
+<style>
+  .description {
+    margin-bottom: var(--spacing-md);
+  }
+
+  section {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  h2 {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+  }
+</style>

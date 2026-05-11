@@ -1,0 +1,79 @@
+@import '@fontsource-variable/inter';
+
+:root {
+  --color-primary: #5b4940;
+  --color-primary-dark: #4a3a32;
+  --color-accent: #745c52;
+  --color-text: #5b4940;
+  --color-text-light: #ffffff;
+  --color-background: #ffffff;
+  --color-border: #dedede;
+
+  --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
+
+  --font-size-base: 18px;
+  --letter-spacing-base: -0.27px;
+
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 2rem;
+  --spacing-lg: 4rem;
+  --spacing-xl: 8rem;
+
+  --max-width: 1200px;
+  --border-radius: 6px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: var(--font-size-base);
+  letter-spacing: var(--letter-spacing-base);
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-sm);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@directus/sdk": "^21.3.0",
+    "@fontsource-variable/inter": "^5.2.8",
     "astro": "^6.3.1"
   }
 }
