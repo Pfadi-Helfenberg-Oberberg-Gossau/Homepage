@@ -1,0 +1,79 @@
+---
+interface Props {
+  Artikel: string;
+  Beschreibung?: string;
+  Preis: number;
+  Bild: string; // Directus file UUID
+}
+
+const { Artikel, Beschreibung, Preis, Bild } = Astro.props;
+
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+const imageUrl = `${DIRECTUS_URL}/assets/${Bild}`;
+
+const formattedPrice = new Intl.NumberFormat("de-CH", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(Preis);
+---
+
+<article class="shop-item">
+  <div class="shop-item__image">
+    <img src={imageUrl} alt={Artikel} loading="lazy" />
+  </div>
+  <div class="shop-item__info">
+    <h3 class="shop-item__title">{Artikel}</h3>
+    {Beschreibung && <p class="shop-item__desc">{Beschreibung}</p>}
+    <p class="shop-item__price">CHF {formattedPrice}</p>
+  </div>
+</article>
+
+<style>
+  .shop-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    align-items: center;
+    padding: var(--spacing-md) 0;
+  }
+
+  .shop-item__image {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    background: var(--color-border);
+    max-height: 400px;
+  }
+  .shop-item__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .shop-item__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .shop-item__desc {
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+  }
+
+  .shop-item__price {
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .shop-item {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-sm);
+    }
+  }
+</style>

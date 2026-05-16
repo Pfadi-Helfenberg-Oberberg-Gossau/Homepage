@@ -1,0 +1,100 @@
+---
+interface Props {
+  name: string;
+  age_range: string;
+  description: string;
+  leitsatz?: string;
+  bild_card: string;
+  slug: string;
+}
+
+const { name, age_range, description, leitsatz, bild_card, slug } = Astro.props;
+
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+const imageUrl = `${DIRECTUS_URL}/assets/${bild_card}`;
+---
+
+<a href={`/stufen/${slug}`} class="stufe-card">
+  <div class="stufe-card__image">
+    <img src={imageUrl} alt={name} loading="lazy" />
+  </div>
+  <div class="stufe-card__body">
+    <span class="stufe-card__age">{age_range}</span>
+    <h3 class="stufe-card__name">{name}</h3>
+    <p class="stufe-card__description">{description}</p>
+    {leitsatz && <p class="stufe-card__leitsatz">«{leitsatz}»</p>}
+  </div>
+</a>
+
+<style>
+  .stufe-card {
+    display: flex;
+    flex-direction: column;
+    border: 0.5px solid var(--color-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s;
+  }
+
+  .stufe-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+  }
+
+  .stufe-card__image {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-border);
+  }
+
+  .stufe-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s;
+  }
+
+  .stufe-card:hover .stufe-card__image img {
+    transform: scale(1.03);
+  }
+
+  .stufe-card__body {
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+  }
+
+  .stufe-card__age {
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .stufe-card__name {
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+
+  .stufe-card__description {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  .stufe-card__leitsatz {
+    font-size: 0.85rem;
+    color: var(--color-accent);
+    font-style: italic;
+    margin-top: auto;
+    padding-top: var(--spacing-xs);
+  }
+</style>

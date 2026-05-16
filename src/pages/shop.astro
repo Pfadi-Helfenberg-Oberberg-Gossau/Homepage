@@ -1,0 +1,25 @@
+---
+import Base from '@/layouts/Base.astro';
+import ShopItem from '@/components/ShopItem.astro';
+import client from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+const items = await client.request(readItems('shop', {
+  filter: { status: { _eq: 'published' } },
+  fields: ['Artikel', 'Beschreibung', 'Preis', 'Bild'],
+  sort: ['sort'],
+}));
+---
+
+<Base title="Shop">
+  <div class="container" style="padding-top: 2rem">
+    {items.map((item) => (
+      <ShopItem
+        Artikel={item.Artikel}
+        Beschreibung={item.Beschreibung}
+        Preis={item.Preis}
+        Bild={item.Bild}
+      />
+    ))}
+  </div>
+</Base>

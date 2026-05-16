@@ -1,0 +1,14 @@
+---
+import client from '@/lib/directus';
+import { serverInfo } from '@directus/sdk';
+import Base from '@/layouts/Base.astro';
+
+
+const info = await client.request(serverInfo());
+---
+
+<Base title="Aktivität">
+  <div class="container" style="padding-top: 2rem">
+    <h1>Nächste Aktivität</h1>
+  </div>
+</Base>

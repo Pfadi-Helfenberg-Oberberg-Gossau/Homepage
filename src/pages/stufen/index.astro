@@ -1,0 +1,38 @@
+---
+import Base from '@/layouts/Base.astro';
+import StufeCard from '@/components/StufeCard.astro';
+import client from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+const stufen = await client.request(readItems('stufen', {
+  filter: { status: { _eq: 'published' } },
+  fields: ['name', 'age_range', 'description', 'leitsatz', 'bild_card'],
+  sort: ['sort'],
+}));
+---
+
+<Base title="Unsere Stufen">
+  <div class="container">
+    <div class="stufen-grid">
+      {stufen.map(stufe => (
+        <StufeCard
+          name={stufe.name}
+          age_range={stufe.age_range}
+          description={stufe.description}
+          leitsatz={stufe.leitsatz}
+          bild_card={stufe.bild_card}
+          slug={stufe.name.toLowerCase()}
+        />
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .stufen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+  }
+</style>

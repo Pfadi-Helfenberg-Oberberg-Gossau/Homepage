@@ -1,101 +1,289 @@
 ---
-import Base from '@/layouts/Base.astro';
-import PageHeader from '@/components/PageHeader.astro';
-import PersonCard from '@/components/PersonCard.astro';
-import client from '@/lib/directus';
-import { readItems } from '@directus/sdk';
+import Base from "@/layouts/Base.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import PersonCard from "@/components/PersonCard.astro";
+import client from "@/lib/directus";
+import { readItems } from "@directus/sdk";
 
 export async function getStaticPaths() {
-  const stufen = await client.request(readItems('stufen', {
-    filter: { status: { _eq: 'published' } },
-    fields: ['id', 'name', 'age_range', 'description']
-  }));
+  const stufen = await client.request(
+    readItems("stufen", {
+      filter: { status: { _eq: "published" } },
+      fields: [
+        "id",
+        "name",
+        "age_range",
+        "description",
+        "leitsatz",
+        "long_description",
+        "bild_hero",
+        "bild_card",
+      ],
+      sort: ["sort"],
+    }),
+  );
 
-    console.log('stufen from directus:', JSON.stringify(stufen, null, 2))
-
-  return stufen.map(stufe => ({
+  return stufen.map((stufe) => ({
     params: { slug: stufe.name.toLowerCase() },
-    props: { stufe }
+    props: { stufe },
   }));
 }
 
 const { stufe } = Astro.props;
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
-// fetch Stufenleitung
-const stufenleitung = await client.request(readItems('stufenleitung', {
-  filter: {
-    stufe: { _eq: stufe.id },
-    status: { _eq: 'published' }
-  },
-  fields: ['sort', 'person.first_name', 'person.last_name', 'person.nickname', 'person.email', 'person.photo'],
-  sort: ['sort']
-}));
+const stufenleitung = await client.request(
+  readItems("stufenleitung", {
+    filter: {
+      stufe: { _eq: stufe.id },
+      status: { _eq: "published" },
+    },
+    fields: [
+      "sort",
+      "person.first_name",
+      "person.last_name",
+      "person.nickname",
+      "person.email",
+      "person.photo",
+    ],
+    sort: ["sort"],
+  }),
+);
 
-// fetch Leitpersonen
-const leitpersonen = await client.request(readItems('leitpersonen', {
-  filter: {
-    stufe: { _eq: stufe.id },
-    status: { _eq: 'published' }
-  },
-  fields: ['sort', 'person.first_name', 'person.last_name', 'person.nickname', 'person.photo'],
-  sort: ['sort']
-}));
+const leitpersonen = await client.request(
+  readItems("leitpersonen", {
+    filter: {
+      stufe: { _eq: stufe.id },
+      status: { _eq: "published" },
+    },
+    fields: [
+      "sort",
+      "person.first_name",
+      "person.last_name",
+      "person.nickname",
+      "person.photo",
+    ],
+    sort: ["sort"],
+  }),
+);
 ---
 
 <Base title={stufe.name}>
-  <PageHeader title={stufe.name} subtitle={stufe.age_range} />
-  <div class="container">
-    {stufe.description && <p class="description">{stufe.description}</p>}
-
-    {stufenleitung.length > 0 && (
-      <section>
-        <h2>Stufenleitung</h2>
-        <div class="team-grid">
-          {stufenleitung.map(r => (
-            <PersonCard
-              name={`${r.person.first_name} ${r.person.last_name}`}
-              nickname={r.person.nickname}
-              email={r.person.email}
-              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
-            />
-          ))}
+  {
+    stufe.bild_hero && (
+      <div class="hero">
+        <img
+          src={`${DIRECTUS_URL}/assets/${stufe.bild_hero}`}
+          alt={stufe.name}
+        />
+        <div class="hero__overlay">
+          <div class="container">
+            <div class="hero__text">
+              <p class="hero__age">{stufe.age_range}</p>
+              <h1 class="hero__title">{stufe.name}</h1>
+              {stufe.leitsatz && (
+                <p class="hero__leitsatz">«{stufe.leitsatz}»</p>
+              )}
+            </div>
+          </div>
         </div>
-      </section>
-    )}
+      </div>
+    )
+  }
 
-    {leitpersonen.length > 0 && (
-      <section>
-        <h2>Leitpersonen</h2>
-        <div class="team-grid">
-          {leitpersonen.map(r => (
-            <PersonCard
-              name={`${r.person.first_name} ${r.person.last_name}`}
-              nickname={r.person.nickname}
-              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
-            />
-          ))}
-        </div>
-      </section>
-    )}
+  {
+    !stufe.bild_hero && (
+      <PageHeader title={stufe.name} subtitle={stufe.age_range} />
+    )
+  }
+
+  <div class="container page-content">
+    {
+      (stufe.description || stufe.long_description) && (
+        <section class="intro">
+          {stufe.description && <p class="intro__lead">{stufe.description}</p>}
+          {stufe.long_description && (
+            <div class="intro__body" set:html={stufe.long_description} />
+          )}
+        </section>
+      )
+    }
+
+    {
+      stufenleitung.length > 0 && (
+        <section>
+          <h2>Stufenleitung</h2>
+          <div class="team-grid">
+            {stufenleitung.map((r) => (
+              <PersonCard
+                name={`${r.person.first_name} ${r.person.last_name}`}
+                nickname={r.person.nickname}
+                email={r.person.email}
+                photo={
+                  r.person.photo
+                    ? `${DIRECTUS_URL}/assets/${r.person.photo}`
+                    : undefined
+                }
+              />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      leitpersonen.length > 0 && (
+        <section>
+          <h2>Leitpersonen</h2>
+          <div class="team-grid">
+            {leitpersonen.map((r) => (
+              <PersonCard
+                name={`${r.person.first_name} ${r.person.last_name}`}
+                nickname={r.person.nickname}
+                photo={
+                  r.person.photo
+                    ? `${DIRECTUS_URL}/assets/${r.person.photo}`
+                    : undefined
+                }
+              />
+            ))}
+          </div>
+        </section>
+      )
+    }
   </div>
 </Base>
 
 <style>
-  .description {
-    margin-bottom: var(--spacing-md);
+  /* Hero */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+  }
+
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.1) 60%,
+      transparent 100%
+    );
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: var(--spacing-md);
+  }
+
+  .hero__age {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .hero__title {
+    font-size: 2.5rem;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .hero__leitsatz {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-style: italic;
+  }
+
+  /* Content */
+  .page-content {
+    padding-top: var(--spacing-md);
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .intro {
+    margin-bottom: var(--spacing-lg);
+    max-width: 720px;
+  }
+
+  .intro__lead {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+  }
+
+  .intro__body h2 {
+    font-size: 1.3rem;
+    margin-bottom: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+  }
+
+  .intro__body h3 {
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+  }
+
+  .intro__body p {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .intro__body ul {
+    padding-left: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
   }
 
   section {
     margin-bottom: var(--spacing-lg);
   }
 
-  h2 {
+  section > h2 {
     margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .team-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--spacing-md);
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      height: 300px;
+    }
+
+    .hero__title {
+      font-size: 1.75rem;
+    }
+  }
+
+  .hero__overlay .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero__text {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    text-align: center;
   }
 </style>

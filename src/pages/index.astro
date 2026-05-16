@@ -1,13 +1,84 @@
 ---
-import client from '../lib/directus';
-import { serverInfo } from '@directus/sdk';
-import Base from '../layouts/Base.astro';
+import client from "@/lib/directus";
+import { serverInfo, readItems, readSingleton } from "@directus/sdk";
+import Base from "@/layouts/Base.astro";
+import StufeCard from "@/components/StufeCard.astro";
 
-const info = await client.request(serverInfo());
+const startseite = await client.request(
+  readSingleton("Startseite", {
+    fields: ["hero", "untertitel", "hero_context"],
+  }),
+);
+
+const stufen = await client.request(
+  readItems("stufen", {
+    filter: { status: { _eq: "published" } },
+    fields: ["name", "age_range", "description", "leitsatz", "bild_card"],
+    sort: ["sort"],
+  }),
+);
+
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 ---
 
 <Base title="Startseite">
-  <div class="container" style="padding-top: 2rem">
-    <h1>Willkommen bei der Pfadi Gossau</h1>
+  <section class="hero">
+    <h1 class="hero__title">{startseite.untertitel}</h1>
+    <div class="hero__image">
+      <img src={`${DIRECTUS_URL}/assets/${startseite.hero}`} alt="Hero" />
+      {
+        startseite.hero_context && (
+          <p class="hero__caption">{startseite.hero_context}</p>
+        )
+      }
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="stufen-grid">
+      {
+        stufen.map((stufe) => (
+          <StufeCard
+            name={stufe.name}
+            age_range={stufe.age_range}
+            description={stufe.description}
+            leitsatz={stufe.leitsatz}
+            bild_card={stufe.bild_card}
+            slug={stufe.name.toLowerCase()}
+          />
+        ))
+      }
+    </div>
   </div>
 </Base>
+
+<style>
+  .hero {
+    padding: var(--spacing-lg) 0 0;
+  }
+  .hero__title {
+    text-align: center;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    max-width: 720px;
+    margin: 0 auto var(--spacing-lg);
+    line-height: 1.3;
+    padding: 0 var(--spacing-sm);
+  }
+  .hero__image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .hero__caption {
+    font-size: 0.8rem;
+    color: var(--color-text);
+    opacity: 0.6;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  .stufen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+  }
+</style>

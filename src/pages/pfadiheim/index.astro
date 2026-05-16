@@ -1,0 +1,13 @@
+---
+import client from '../lib/directus';
+import { serverInfo } from '@directus/sdk';
+import Base from '../layouts/Base.astro';
+
+const info = await client.request(serverInfo());
+---
+
+<Base title="Startseite">
+  <div class="container" style="padding-top: 2rem">
+    <h1>Willkommen bei der Pfadi Gossau</h1>
+  </div>
+</Base>

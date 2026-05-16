@@ -1,12 +1,33 @@
 ---
-const navItems = [
-  { label: 'Startseite', href: '/' },
-  { label: 'Wochenprogramm', href: '/wochenprogramm' },
-  { label: 'Stufen', href: '/stufen' },
-  { label: 'Über uns', href: '/ueber-uns' },
-  { label: 'Mitmachen', href: '/mitmachen' },
-  { label: 'Downloads', href: '/downloads' },
-  { label: 'Kontakt', href: '/kontakt' },
+interface NavChild {
+  label: string;
+  href: string;
+}
+
+interface NavItem {
+  label: string;
+  href: string;
+  children?: NavChild[];
+}
+
+const navItems: NavItem[] = [
+  { label: "Startseite", href: "/" },
+  { label: "Pfadiaktivität", href: "/pfadiaktivitaet" },
+  { label: "Shop", href: "/shop" },
+  {
+    label: "Stufen",
+    href: "/stufen",
+    children: [
+      { label: "Biberstufe", href: "/stufen/biberstufe" },
+      { label: "Wolfsstufe", href: "/stufen/wolfsstufe" },
+      { label: "Pfadistufe", href: "/stufen/pfadistufe" },
+      { label: "Piostufe", href: "/stufen/piostufe" },
+    ],
+  },
+  { label: "Über uns", href: "/ueber-uns" },
+  { label: "Mitmachen", href: "/mitmachen" },
+  { label: "Downloads", href: "/downloads" },
+  { label: "Kontakt", href: "/kontakt" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -15,25 +36,40 @@ const currentPath = Astro.url.pathname;
 <header>
   <div class="container">
     <a href="/" class="logo">
-      <img src="/logo.png" alt="Pfadi Gossau" height="60" />
+      <img src="/logo.png" alt="Pfadi Gossau" />
     </a>
     <nav>
       <ul>
-        {navItems.map(item => (
-          <li>
-            <a 
-              href={item.href}
-              class={currentPath === item.href ? 'active' : ''}
-            >
-              {item.label}
-            </a>
-          </li>
-        ))}
+        {
+          navItems.map((item) => (
+            <li class={item.children ? "has-dropdown" : ""}>
+              <a
+                href={item.href}
+                class={currentPath === item.href ? "active" : ""}
+              >
+                {item.label}
+                {item.children && <span class="chevron">▾</span>}
+              </a>
+              {item.children && (
+                <ul class="dropdown" style="display: none;">
+                  {item.children.map((child) => (
+                    <li>
+                      <a
+                        href={child.href}
+                        class={currentPath === child.href ? "active" : ""}
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))
+        }
       </ul>
     </nav>
-    <button class="menu-toggle" aria-label="Menü öffnen">
-      ☰
-    </button>
+    <button class="menu-toggle" aria-label="Menü öffnen">☰</button>
   </div>
 </header>
 
@@ -47,7 +83,7 @@ const currentPath = Astro.url.pathname;
   }
 
   .logo img {
-    height: 160px;
+    height: 120px;
     width: auto;
   }
 
@@ -58,7 +94,7 @@ const currentPath = Astro.url.pathname;
     gap: var(--spacing-sm);
   }
 
-  nav ul {
+  nav > ul {
     display: flex;
     list-style: none;
     gap: var(--spacing-sm);
@@ -71,12 +107,58 @@ const currentPath = Astro.url.pathname;
     padding: var(--spacing-xs);
     border-radius: var(--border-radius);
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   nav a:hover,
   nav a.active {
     background-color: var(--color-accent);
     text-decoration: none;
+  }
+
+  .has-dropdown {
+    position: relative;
+  }
+
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    flex-direction: column;
+    background-color: var(--color-primary-dark);
+    border-radius: var(--border-radius);
+    padding: 0.25rem 0;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    gap: 0.25rem var(--spacing-sm);
+  }
+
+  .dropdown li {
+    width: 100%;
+  }
+
+  .dropdown a {
+    padding: 0.25rem var(--spacing-sm);
+    border-radius: 0;
+    width: 100%;
+  }
+
+  .has-dropdown:hover .dropdown {
+    display: flex;
+  }
+
+  .has-dropdown:hover .dropdown,
+  .dropdown.open {
+    display: flex;
+  }
+
+  .chevron {
+    font-size: 0.75rem;
+    opacity: 0.8;
   }
 
   .menu-toggle {
@@ -92,9 +174,21 @@ const currentPath = Astro.url.pathname;
     nav {
       display: none;
     }
-
     .menu-toggle {
       display: block;
     }
   }
 </style>
+
+<script>
+  document.querySelectorAll('.has-dropdown').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      const dropdown = item.querySelector('.dropdown') as HTMLElement;
+      if (dropdown) dropdown.style.display = 'flex';
+    });
+    item.addEventListener('mouseleave', () => {
+      const dropdown = item.querySelector('.dropdown') as HTMLElement;
+      if (dropdown) dropdown.style.display = 'none';
+    });
+  });
+</script>

@@ -1,0 +1,39 @@
+---
+// src/components/InstagramFeed.astro
+const res = await fetch(`https://feeds.behold.so/YOUR_FEED_ID`);
+const posts = await res.json();
+---
+
+<div class="insta-grid">
+  {posts.slice(0, 9).map((post) => (
+    <a href={post.permalink} target="_blank" rel="noopener">
+      <img src={post.sizes.medium.url} alt={post.caption ?? 'Instagram post'} loading="lazy" />
+    </a>
+  ))}
+</div>
+
+<style>
+  .insta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .insta-grid a {
+    aspect-ratio: 1;
+    overflow: hidden;
+    display: block;
+  }
+
+  .insta-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .insta-grid a:hover img {
+    opacity: 0.85;
+  }
+</style>

@@ -1,0 +1,177 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import PersonCard from '@/components/PersonCard.astro';
+import client from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+type AbteilungEntry = {
+  group: string;
+  sort: number;
+  person: {
+    first_name: string;
+    last_name: string;
+    nickname: string;
+    photo: string;
+    email: string;
+  }
+}
+
+type StufenleitungEntry = {
+  sort: number;
+  stufe: {
+    name: string;
+    id: number;
+  };
+  person: {
+    first_name: string;
+    last_name: string;
+    nickname: string;
+    photo: string;
+    email: string;
+  }
+}
+
+// fetch Abteilungsleitung grouped
+const abteilung = await client.request(readItems('abteilungsleitung', {
+  filter: { status: { _eq: 'published' } },
+  fields: [
+    'group',
+    'sort',
+    'person.first_name',
+    'person.last_name',
+    'person.nickname',
+    'person.photo',
+    'person.email'
+  ],
+  sort: ['group', 'sort']
+})) as AbteilungEntry[];
+
+const grouped = abteilung.reduce((acc: Record<string, AbteilungEntry[]>, r: AbteilungEntry) => {
+  acc[r.group] = [...(acc[r.group] ?? []), r]
+  return acc
+}, {})
+
+// fetch Stufenleitung per Stufe
+const stufenleitung = await client.request(readItems('stufenleitung', {
+  filter: { status: { _eq: 'published' } },
+  fields: [
+    'sort',
+    'stufe.name',
+    'stufe.id',
+    'person.first_name',
+    'person.last_name',
+    'person.nickname',
+    'person.photo',
+    'person.email'
+  ],
+  sort: ['stufe.sort', 'sort']
+})) as StufenleitungEntry[];
+
+const stufenGrupped = stufenleitung.reduce((acc: Record<string, StufenleitungEntry[]>, r: StufenleitungEntry) => {
+  const stufeName = r.stufe.name
+  acc[stufeName] = [...(acc[stufeName] ?? []), r]
+  return acc
+}, {})
+---
+
+<Base title="Team">
+  <PageHeader title="Unser Team" />
+  <div class="container">
+
+    {grouped['abteilungsleitung'] && (
+      <section>
+        <h2>Abteilungsleitung</h2>
+        <div class="team-grid">
+          {grouped['abteilungsleitung'].map((r: AbteilungEntry) => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              email={r.person.email}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section>
+      <h2>Stufenleitung</h2>
+      {Object.entries(stufenGrupped).map(([stufeName, members]) => (
+        <div class="stufe-group">
+          <h3>{stufeName}</h3>
+          <div class="team-grid">
+            {members.map((r: StufenleitungEntry) => (
+              <PersonCard
+                name={`${r.person.first_name} ${r.person.last_name}`}
+                nickname={r.person.nickname}
+                email={r.person.email}
+                photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+
+    {grouped['materialteam'] && (
+      <section>
+        <h2>Materialteam</h2>
+        <div class="team-grid">
+          {grouped['materialteam'].map((r: AbteilungEntry) => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              email={r.person.email}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {grouped['medienteam'] && (
+      <section>
+        <h2>Medienteam</h2>
+        <div class="team-grid">
+          {grouped['medienteam'].map((r: AbteilungEntry) => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              email={r.person.email}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+  </div>
+</Base>
+
+<style>
+  section {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  h2 {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .stufe-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  h3 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-accent);
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+  }
+</style>
