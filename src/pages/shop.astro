@@ -6,7 +6,7 @@ import { readItems } from '@directus/sdk';
 
 const items = await client.request(readItems('shop', {
   filter: { status: { _eq: 'published' } },
-  fields: ['Artikel', 'Beschreibung', 'Preis', 'Bild'],
+  fields: ['Artikel', 'Beschreibung', 'Preis', 'Bild', 'Bild2'],
   sort: ['sort'],
 }));
 ---
@@ -18,7 +18,8 @@ const items = await client.request(readItems('shop', {
         Artikel={item.Artikel}
         Beschreibung={item.Beschreibung}
         Preis={item.Preis}
-        Bild={item.Bild}
+        Bild={item.Bild}  
+        Bild2={item.Bild2}
       />
     ))}
   </div>

@@ -1,0 +1,15 @@
+---
+import Base from '@/layouts/Base.astro';
+import client from '@/lib/directus';
+import { readSingleton } from '@directus/sdk';
+
+const datenschutz = await client.request(readSingleton('Datenschutz', {
+  fields: ['inhalt'],
+}));
+---
+
+<Base title="Datenschutzerklärung">
+  <div class="container" style="padding-top: 2rem">
+    <div set:html={datenschutz.inhalt} />
+  </div>
+</Base>

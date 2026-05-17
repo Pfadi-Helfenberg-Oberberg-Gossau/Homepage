@@ -1,14 +1,200 @@
 ---
-import client from '@/lib/directus';
-import { serverInfo } from '@directus/sdk';
-import Base from '@/layouts/Base.astro';
+import Base from "@/layouts/Base.astro";
+import client from "@/lib/directus";
+import { readItems } from "@directus/sdk";
 
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
-const info = await client.request(serverInfo());
+const stufen = await client.request(
+  readItems("stufen", {
+    filter: {
+      status: { _eq: "published" },
+      name: { _in: ["Biberstufe", "Wolfsstufe", "Pfadistufe"] },
+    },
+    fields: ["name", "email", "bild_icon"],
+    sort: ["sort"],
+  }),
+);
+
+const programme = await client.request(
+  readItems("program", {
+    filter: { status: { _eq: "published" } },
+    fields: [
+      "stufe",
+      "Ort",
+      "Startzeit",
+      "Schlusszeit",
+      "Mitnehmen",
+      "Datum",
+      "Enddatum",
+    ],
+  }),
+);
+
+// Match latest program per stufe
+const programByStufe = Object.fromEntries(
+  stufen.map((s) => [
+    s.name,
+    programme
+      .filter((p) => p.stufe === s.name)
+      .sort(
+        (a, b) => new Date(b.Datum).getTime() - new Date(a.Datum).getTime(),
+      )[0],
+  ]),
+);
+
+function formatDate(datum: string, enddatum?: string | null) {
+  const opts: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  };
+  const start = new Date(datum).toLocaleDateString("de-CH", opts);
+  if (enddatum) {
+    const end = new Date(enddatum).toLocaleDateString("de-CH", opts);
+    return `Aktivität vom ${start} bis ${end}`;
+  }
+  return `Aktivität vom ${start}`;
+}
+
+function formatTime(time: string) {
+  return time?.slice(0, 5); // "14:00:00" → "14:00"
+}
 ---
 
-<Base title="Aktivität">
+<Base title="Programm">
   <div class="container" style="padding-top: 2rem">
-    <h1>Nächste Aktivität</h1>
+    <h1 class="page-title">Programm</h1>
+    <div class="stufen-list">
+      {
+        stufen.map((stufe) => {
+          const prog = programByStufe[stufe.name];
+          return (
+            <section class="stufe-section">
+              {stufe.bild_icon && (
+                <img
+                  class="stufe-icon"
+                  src={`${DIRECTUS_URL}/assets/${stufe.bild_icon}`}
+                  alt={stufe.name}
+                />
+              )}
+              <h2 class="stufe-title">{stufe.name}</h2>
+
+              {prog ? (
+                <div class="stufe-program">
+                  <p class="program-date">
+                    {formatDate(prog.Datum, prog.Enddatum)}
+                  </p>
+                  <div class="program-details">
+                    {prog.Startzeit && (
+                      <p>
+                        <strong>Startpunkt:</strong>{" "}
+                        {formatTime(prog.Startzeit)} Uhr {prog.Ort}
+                      </p>
+                    )}
+                    {prog.Schlusszeit && (
+                      <p>
+                        <strong>Schlusspunkt:</strong>{" "}
+                        {formatTime(prog.Schlusszeit)} Uhr {prog.Ort}
+                      </p>
+                    )}
+                    {prog.Mitnehmen && (
+                      <p>
+                        <strong>Mitnehmen / Anziehen:</strong>{" "}
+                        {prog.Mitnehmen && (
+                          <p>
+                            <strong>Mitnehmen / Anziehen:</strong>{" "}
+                            {Array.isArray(prog.Mitnehmen)
+                              ? prog.Mitnehmen.join(", ")
+                              : prog.Mitnehmen}
+                          </p>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  {stufe.email && (
+                    <div class="program-contact">
+                      <p>
+                        <strong>Abmelden und bei Fragen</strong>
+                      </p>
+                      <p>
+                        Mail:{" "}
+                        <a href={`mailto:${stufe.email}`}>{stufe.email}</a>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p class="no-program">Kein aktuelles Programm vorhanden.</p>
+              )}
+            </section>
+          );
+        })
+      }
+    </div>
   </div>
 </Base>
+
+<style>
+  .page-title {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+  }
+  .stufen-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .stufe-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .stufe-section:last-child {
+    border-bottom: none;
+  }
+  .stufe-icon {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    margin-bottom: var(--spacing-sm);
+  }
+  .stufe-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+  }
+  .program-date {
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+  }
+  .program-details {
+    text-align: left;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+  }
+  .program-details p {
+    line-height: 1.6;
+  }
+  .program-contact {
+    text-align: left;
+    width: 100%;
+    margin-top: var(--spacing-sm);
+  }
+  .program-contact a {
+    color: var(--color-text);
+  }
+  .no-program {
+    color: var(--color-accent);
+    font-style: italic;
+  }
+</style>

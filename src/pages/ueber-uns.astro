@@ -1,0 +1,109 @@
+---
+import Base from '@/layouts/Base.astro';
+import client from '@/lib/directus';
+import { readSingleton, readItems } from '@directus/sdk';
+
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+
+const about = await client.request(readSingleton('about', {
+  fields: [
+    'intro_text', 'intro_bild',
+    'aktivitaeten_text', 'aktivitaeten_bild',
+    'werte_text', 'werte_bild',
+    'schuppern_text', 'schnuppern_bild',
+    'pfadiheim_text', 'pfadiheim_bild',
+  ],
+}));
+---
+
+<Base title="Über uns">
+  <div class="container" style="padding-top: 2rem">
+    <h1>Wir stellen uns vor…</h1>
+
+    <section class="abschnitt">
+      <div class="abschnitt__bild">
+        {about.intro_bild && (
+          <img src={`${DIRECTUS_URL}/assets/${about.intro_bild}`} alt="Intro" />
+        )}
+      </div>
+      <div class="abschnitt__text" set:html={about.intro_text} />
+    </section>
+
+    <section class="abschnitt abschnitt--reverse">
+      <div class="abschnitt__bild">
+        {about.aktivitaeten_bild && (
+          <img src={`${DIRECTUS_URL}/assets/${about.aktivitaeten_bild}`} alt="Aktivitäten" />
+        )}
+      </div>
+      <div class="abschnitt__text" set:html={about.aktivitaeten_text} />
+    </section>
+
+    <section class="abschnitt">
+      <div class="abschnitt__bild">
+        {about.werte_bild && (
+          <img src={`${DIRECTUS_URL}/assets/${about.werte_bild}`} alt="Werte" />
+        )}
+      </div>
+      <div class="abschnitt__text" set:html={about.werte_text} />
+    </section>
+
+    <section class="abschnitt abschnitt--reverse">
+      <div class="abschnitt__bild">
+        {about.schnuppern_bild && (
+          <img src={`${DIRECTUS_URL}/assets/${about.schnuppern_bild}`} alt="Pfadiluft schnuppern" />
+        )}
+      </div>
+      <div class="abschnitt__text" set:html={about.schuppern_text} />
+    </section>
+
+    <section class="abschnitt">
+      <div class="abschnitt__bild">
+        {about.pfadiheim_bild && (
+          <img src={`${DIRECTUS_URL}/assets/${about.pfadiheim_bild}`} alt="Pfadiheim" />
+        )}
+      </div>
+      <div class="abschnitt__text" set:html={about.pfadiheim_text} />
+    </section>
+  </div>
+</Base>
+
+<style>
+  h1 {
+    margin-bottom: var(--spacing-lg);
+  }
+  .abschnitt {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    align-items: center;
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .abschnitt:last-child {
+    border-bottom: none;
+  }
+  .abschnitt--reverse {
+    direction: rtl;
+  }
+  .abschnitt--reverse > * {
+    direction: ltr;
+  }
+  .abschnitt__bild img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+  }
+  .abschnitt__text {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+  @media (max-width: 640px) {
+    .abschnitt,
+    .abschnitt--reverse {
+      grid-template-columns: 1fr;
+      direction: ltr;
+    }
+  }
+</style>

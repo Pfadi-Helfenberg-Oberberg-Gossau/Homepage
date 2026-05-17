@@ -1,38 +1,59 @@
 @import '@fontsource-variable/inter';
 
 :root {
+  /* Colors */
   --color-primary: #5b4940;
   --color-primary-dark: #4a3a32;
   --color-accent: #745c52;
   --color-text: #5b4940;
   --color-text-light: #ffffff;
+  --color-text-muted: #9a8880;
   --color-background: #ffffff;
   --color-border: #dedede;
+  --color-border-light: #f0ebe9;
 
+  /* Typography */
   --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
-
   --font-size-base: 18px;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.5rem;
   --letter-spacing-base: -0.27px;
+  --letter-spacing-tight: -0.5px;
 
+  /* Spacing */
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 2rem;
   --spacing-lg: 4rem;
   --spacing-xl: 8rem;
 
+  /* Layout */
   --max-width: 1200px;
   --border-radius: 6px;
+  --border-radius-lg: 12px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
 }
 
+/* Reset */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Base */
 html {
   font-size: var(--font-size-base);
   letter-spacing: var(--letter-spacing-base);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -40,35 +61,6 @@ body {
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.6;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--color-text);
-}
-
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-.container {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--spacing-sm);
-}
-
-body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -76,4 +68,138 @@ body {
 
 .main-content {
   flex: 1;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: clamp(1.75rem, 4vw, var(--font-size-4xl)); }
+h2 { font-size: clamp(1.375rem, 3vw, var(--font-size-3xl)); }
+h3 { font-size: clamp(1.125rem, 2vw, var(--font-size-2xl)); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
+
+/* first heading on a page shouldn't have top margin */
+h1:first-child,
+h2:first-child {
+  margin-top: 0;
+}
+
+/* Paragraphs */
+p {
+  margin-bottom: 1rem;
+  max-width: 70ch;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Lists */
+ul, ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+li {
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* HR */
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--spacing-md) 0;
+}
+
+/* Strong / Em */
+strong {
+  font-weight: 600;
+}
+
+em {
+  font-style: italic;
+}
+
+/* Layout */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-sm);
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+}
+
+/* Smooth image rendering */
+img, svg {
+  vertical-align: middle;
+}
+
+.btn {
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+  margin-top: var(--spacing-sm);
+}
+
+.btn:hover {
+  background-color: var(--color-primary-dark);
+  text-decoration: none;
+  opacity: 1;
+}
+
+.btn--outline {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn--outline:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
 }

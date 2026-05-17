@@ -1,16 +1,18 @@
 ---
+import { ChevronLeft, ChevronRight } from "@lucide/astro";
+
 interface Props {
   Artikel: string;
   Beschreibung?: string;
   Preis: number;
-  Bild: string; // Directus file UUID
+  Bild: string;
+  Bild2?: string;
 }
 
-const { Artikel, Beschreibung, Preis, Bild } = Astro.props;
-
+const { Artikel, Beschreibung, Preis, Bild, Bild2 } = Astro.props;
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 const imageUrl = `${DIRECTUS_URL}/assets/${Bild}`;
-
+const image2Url = Bild2 ? `${DIRECTUS_URL}/assets/${Bild2}` : null;
 const formattedPrice = new Intl.NumberFormat("de-CH", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -18,8 +20,45 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
 ---
 
 <article class="shop-item">
-  <div class="shop-item__image">
-    <img src={imageUrl} alt={Artikel} loading="lazy" />
+  <div class="shop-item__image" data-has-second={image2Url ? "true" : "false"}>
+    <img
+      class="shop-item__img shop-item__img--active"
+      src={imageUrl}
+      alt={Artikel}
+      loading="lazy"
+    />
+    {
+      image2Url && (
+        <img
+          class="shop-item__img"
+          src={image2Url}
+          alt={`${Artikel} – Ansicht 2`}
+          loading="lazy"
+        />
+      )
+    }
+    {
+      image2Url && (
+        <>
+          <button
+            class="shop-item__arrow shop-item__arrow--prev"
+            aria-label="Vorheriges Bild"
+          >
+            <ChevronLeft size={20} stroke-width={2.5} />
+          </button>
+          <button
+            class="shop-item__arrow shop-item__arrow--next"
+            aria-label="Nächstes Bild"
+          >
+            <ChevronRight size={20} strok-width={2.5} />
+          </button>
+          <div class="shop-item__dots">
+            <span class="shop-item__dot shop-item__dot--active" />
+            <span class="shop-item__dot" />
+          </div>
+        </>
+      )
+    }
   </div>
   <div class="shop-item__info">
     <h3 class="shop-item__title">{Artikel}</h3>
@@ -36,40 +75,88 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
     align-items: center;
     padding: var(--spacing-md) 0;
   }
-
   .shop-item__image {
+    position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: var(--border-radius);
     background: var(--color-border);
     max-height: 400px;
   }
-  .shop-item__image img {
+  .shop-item__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
     display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
-
+  .shop-item__img--active {
+    opacity: 1;
+  }
+  .shop-item__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s ease;
+    z-index: 1;
+  }
+  .shop-item__arrow:hover {
+    background: rgba(0, 0, 0, 0.75);
+  }
+  .shop-item__arrow--prev {
+    left: var(--spacing-xs);
+  }
+  .shop-item__arrow--next {
+    right: var(--spacing-xs);
+  }
+  .shop-item__dots {
+    position: absolute;
+    bottom: var(--spacing-xs);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.4rem;
+  }
+  .shop-item__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: background 0.2s ease;
+  }
+  .shop-item__dot--active {
+    background: white;
+  }
   .shop-item__title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text);
     margin-bottom: var(--spacing-xs);
   }
-
   .shop-item__desc {
     color: var(--color-accent);
     margin-bottom: var(--spacing-sm);
     line-height: 1.6;
   }
-
   .shop-item__price {
     color: var(--color-text);
     font-size: 1rem;
   }
-
   @media (max-width: 640px) {
     .shop-item {
       grid-template-columns: 1fr;
@@ -77,3 +164,26 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
     }
   }
 </style>
+
+<script>
+  document
+    .querySelectorAll(".shop-item__image[data-has-second='true']")
+    .forEach((container) => {
+      const imgs = container.querySelectorAll<HTMLElement>(".shop-item__img");
+      const dots = container.querySelectorAll<HTMLElement>(".shop-item__dot");
+      const prev = container.querySelector(".shop-item__arrow--prev");
+      const next = container.querySelector(".shop-item__arrow--next");
+      let current = 0;
+
+      function goTo(index: number) {
+        imgs[current].classList.remove("shop-item__img--active");
+        dots[current].classList.remove("shop-item__dot--active");
+        current = (index + imgs.length) % imgs.length;
+        imgs[current].classList.add("shop-item__img--active");
+        dots[current].classList.add("shop-item__dot--active");
+      }
+
+      prev?.addEventListener("click", () => goTo(current - 1));
+      next?.addEventListener("click", () => goTo(current + 1));
+    });
+</script>
