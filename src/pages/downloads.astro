@@ -1,0 +1,29 @@
+---
+import Base from "@/layouts/Base.astro";
+import DownloadList from "@/components/DownloadList.astro";
+import client from "@/lib/directus";
+import { readItems } from "@directus/sdk";
+
+const categories = await client.request(
+  readItems("download_categories", {
+    filter: { status: { _eq: "published" } },
+    fields: [
+      "id",
+      "name",
+      "files.id",
+      "files.name",
+      "files.sort",
+      "files.file.id",
+      "files.file.type",
+      "files.file.filesize",
+    ],
+    sort: ["sort"],
+  }),
+);
+---
+
+<Base title="Downloads">
+  <div class="container page-content">
+    <DownloadList categories={categories} />
+  </div>
+</Base>

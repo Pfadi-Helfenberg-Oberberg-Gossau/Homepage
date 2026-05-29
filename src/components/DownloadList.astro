@@ -1,0 +1,140 @@
+---
+import { File, Download } from '@lucide/astro';
+const { categories } = Astro.props;
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+
+function getFileType(mimeType: string): string {
+  if (mimeType?.includes("pdf")) return "PDF";
+  if (mimeType?.includes("word") || mimeType?.includes("docx")) return "DOCX";
+  if (mimeType?.includes("spreadsheet") || mimeType?.includes("xlsx")) return "XLSX";
+  if (mimeType?.includes("image")) return "IMG";
+  return "FILE";
+}
+
+function formatFilesize(bytes: number): string {
+  if (!bytes) return "";
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+---
+
+{categories.map((category: any) => (
+  <section class="download-category">
+    <h2 class="download-category__title">{category.name}</h2>
+    <ul class="download-list">
+      {category.files
+        ?.filter((f: any) => f.file)
+        .sort((a: any, b: any) => a.sort - b.sort)
+        .map((f: any) => (
+          <li class="download-item">
+            <a
+              class="download-card"
+              href={`${DIRECTUS_URL}/assets/${f.file.id}?download`}
+            >
+              <div class="download-card__icon">
+                <File size={24} />
+              </div>
+              <div class="download-card__info">
+                <span class="download-card__name">{f.name}</span>
+                <div class="download-card__meta">
+                  <span class="download-card__type">{getFileType(f.file.type)}</span>
+                  {f.file.filesize && (
+                    <span class="download-card__size">{formatFilesize(f.file.filesize)}</span>
+                  )}
+                </div>
+              </div>
+              <div class="download-card__action">
+                <Download size={18} />
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+))}
+
+<style>
+  .download-category {
+    margin-bottom: 3rem;
+  }
+
+  .download-category__title {
+    margin-bottom: 1rem;
+  }
+
+  .download-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .download-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .download-card:hover {
+    background: var(--color-surface-hover, #f9fafb);
+    border-color: var(--color-border-hover, #d1d5db);
+  }
+
+  .download-card__icon {
+    color: var(--color-primary, #6366f1);
+    flex-shrink: 0;
+  }
+
+  .download-card__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .download-card__name {
+    display: block;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .download-card__meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+  }
+
+  .download-card__type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary, #6366f1);
+    background: var(--color-primary-light, #eef2ff);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+  }
+
+  .download-card__size {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #6b7280);
+    align-self: center;
+  }
+
+  .download-card__action {
+    color: var(--color-text-muted, #6b7280);
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .download-card:hover .download-card__action {
+    color: var(--color-primary, #6366f1);
+  }
+</style>

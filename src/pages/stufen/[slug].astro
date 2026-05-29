@@ -99,11 +99,12 @@ const leitpersonen = await client.request(
 
   <div class="container page-content">
     {
-      (stufe.description || stufe.long_description) && (
+      (stufe.long_description || stufe.description) && (
         <section class="intro">
-          {stufe.description && <p class="intro__lead">{stufe.description}</p>}
-          {stufe.long_description && (
+          {stufe.long_description ? (
             <div class="intro__body" set:html={stufe.long_description} />
+          ) : (
+            <p class="intro__lead">{stufe.description}</p>
           )}
         </section>
       )
