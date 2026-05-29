@@ -83,18 +83,20 @@ const currentPath = Astro.url.pathname;
     z-index: 100;
   }
 
-  header.scrolled .logo img {
-    height: 60px;
-    transition: height 0.3s ease;
+  header.scrolled {
+    padding: 0.25rem 0;
   }
 
   .logo img {
-    transition: height 0.3s ease;
-  }
-
-  .logo img {
-    height: 120px;
+    max-height: 80px;
     width: auto;
+    height: auto;
+    transition: max-height 0.3s ease;
+    will-change: max-height;
+  }
+
+  header.scrolled .logo img {
+    max-height: 50px;
   }
 
   .container {
@@ -102,13 +104,22 @@ const currentPath = Astro.url.pathname;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-sm);
+    min-height: 100%;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
   }
 
   nav > ul {
+    margin: 0;
+    padding: 0;
     display: flex;
     list-style: none;
     gap: var(--spacing-sm);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   nav a {
@@ -120,6 +131,7 @@ const currentPath = Astro.url.pathname;
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
   }
 
   nav a:hover,
@@ -144,7 +156,7 @@ const currentPath = Astro.url.pathname;
     min-width: 160px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     z-index: 10;
-    gap: 0.25rem var(--spacing-sm);
+    gap: 0;
   }
 
   .dropdown li {
@@ -169,6 +181,12 @@ const currentPath = Astro.url.pathname;
     color: var(--color-text-light);
     font-size: 1.5rem;
     cursor: pointer;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
@@ -179,9 +197,9 @@ const currentPath = Astro.url.pathname;
     nav.mobile-open {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
       width: 100%;
       position: fixed;
-      /* top is set dynamically by JS based on header height */
       left: 0;
       bottom: 0;
       background-color: var(--color-primary);
@@ -190,22 +208,56 @@ const currentPath = Astro.url.pathname;
       overflow-y: auto;
     }
 
+    /* Top-level items: left aligned, full width */
     nav.mobile-open > ul {
       flex-direction: column;
+      flex-wrap: nowrap;
+      width: 100%;
+      gap: 0.25rem;
+    }
+
+    nav.mobile-open > ul > li {
       width: 100%;
     }
 
+    nav.mobile-open > ul > li > a {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    /* Subitems: always visible, indented with left border */
     nav.mobile-open .dropdown {
+      display: flex !important; /* always visible on mobile */
       position: static;
       box-shadow: none;
-      background-color: var(--color-primary-dark);
-      border-radius: var(--border-radius);
-      padding: 0.25rem 0;
+      background-color: transparent;
+      border-radius: 0;
+      padding: 0.25rem 0 0.25rem 0;
       width: 100%;
+      margin-left: var(--spacing-sm);
+      border-left: 2px solid var(--color-accent);
+      gap: 0;
+    }
+
+    nav.mobile-open .dropdown li {
+      width: 100%;
+    }
+
+    nav.mobile-open .dropdown a {
+      font-size: var(--font-size-sm);
+      opacity: 0.9;
+      padding: 0.25rem var(--spacing-sm);
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    /* Hide chevron on mobile since dropdown is always open */
+    nav.mobile-open .chevron {
+      display: none;
     }
 
     .menu-toggle {
-      display: block;
+      display: flex;
     }
   }
 </style>
@@ -232,7 +284,6 @@ const currentPath = Astro.url.pathname;
     const isOpen = nav.classList.contains("mobile-open");
     nav.classList.toggle("mobile-open", !isOpen);
 
-    // Set top to actual header height so menu starts right below it
     if (!isOpen) {
       nav.style.top = header.offsetHeight + "px";
     } else {
@@ -246,12 +297,15 @@ const currentPath = Astro.url.pathname;
     toggle.textContent = isOpen ? "☰" : "✕";
   });
 
-  // Shrink header on scroll
+  // Shrink header on scroll (debounced to prevent spasm)
+  let lastScroll = 0;
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 50) {
+    const current = window.scrollY;
+    if (current > 80 && !header.classList.contains("scrolled")) {
       header.classList.add("scrolled");
-    } else {
+    } else if (current <= 80 && header.classList.contains("scrolled")) {
       header.classList.remove("scrolled");
     }
+    lastScroll = current;
   });
 </script>

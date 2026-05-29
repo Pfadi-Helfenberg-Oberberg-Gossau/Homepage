@@ -8,10 +8,10 @@ const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 const settings = await client.request(
   readSingleton("Einstellungen", {
     fields: [
-      "logo_pbs",
-      "logo_pbs_url",
       "logo_sgarai",
       "logo_sgarai_url",
+      "logo_pbs",
+      "logo_pbs_url",
       "logo_igsport",
       "logo_igsport_url",
       "logo_sportvereint",
@@ -23,12 +23,12 @@ const settings = await client.request(
 );
 
 const logos = [
-  { img: settings.logo_pbs, url: settings.logo_pbs_url, alt: "PBS" },
   {
     img: settings.logo_sgarai,
     url: settings.logo_sgarai_url,
     alt: "Kantonalverband SG/AR/AI",
   },
+  { img: settings.logo_pbs, url: settings.logo_pbs_url, alt: "PBS" },
   {
     img: settings.logo_igsport,
     url: settings.logo_igsport_url,
