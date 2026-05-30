@@ -1,7 +1,7 @@
 ---
-import client from '../lib/directus';
+import client from '@/lib/directus';
 import { serverInfo } from '@directus/sdk';
-import Base from '../layouts/Base.astro';
+import Base from '@/layouts/Base.astro';
 
 const info = await client.request(serverInfo());
 ---

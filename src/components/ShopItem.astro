@@ -80,7 +80,7 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: var(--border-radius);
-    background: var(--color-border);
+    background: var(--color-background);
     max-height: 400px;
   }
   .shop-item__img {
@@ -88,7 +88,7 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     display: block;
     opacity: 0;

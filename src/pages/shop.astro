@@ -1,26 +1,37 @@
 ---
-import Base from '@/layouts/Base.astro';
-import ShopItem from '@/components/ShopItem.astro';
-import client from '@/lib/directus';
-import { readItems } from '@directus/sdk';
+import Base from "@/layouts/Base.astro";
+import ShopItem from "@/components/ShopItem.astro";
+import client from "@/lib/directus";
+import { readItems } from "@directus/sdk";
 
-const items = await client.request(readItems('shop', {
-  filter: { status: { _eq: 'published' } },
-  fields: ['Artikel', 'Beschreibung', 'Preis', 'Bild', 'Bild2'],
-  sort: ['sort'],
-}));
+const items = await client.request(
+  readItems("shop", {
+    filter: { status: { _eq: "published" } },
+    fields: ["Artikel", "Beschreibung", "Preis", "Bild", "Bild2"],
+    sort: ["sort"],
+  }),
+);
 ---
 
 <Base title="Shop">
   <div class="container" style="padding-top: 2rem">
-    {items.map((item) => (
-      <ShopItem
-        Artikel={item.Artikel}
-        Beschreibung={item.Beschreibung}
-        Preis={item.Preis}
-        Bild={item.Bild}  
-        Bild2={item.Bild2}
-      />
-    ))}
+    <div style="margin-bottom: 2rem;">
+      <h1>Shop</h1>
+      <p style="color: var(--color-text, #6b7280); margin-top: 0.5rem;">
+        Hier findest du unsere Pfadi-Merchandise-Artikel. Für Fragen oder einen 
+        Anprobe-Termin melde dich bei <a href="mailto:shop@pfadigossau.ch">shop@pfadigossau.ch</a>.
+      </p>
+    </div>
+    {
+      items.map((item) => (
+        <ShopItem
+          Artikel={item.Artikel}
+          Beschreibung={item.Beschreibung}
+          Preis={item.Preis}
+          Bild={item.Bild}
+          Bild2={item.Bild2}
+        />
+      ))
+    }
   </div>
 </Base>

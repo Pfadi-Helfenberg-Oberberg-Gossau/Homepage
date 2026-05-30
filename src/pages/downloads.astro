@@ -23,7 +23,13 @@ const categories = await client.request(
 ---
 
 <Base title="Downloads">
-  <div class="container page-content">
+  <div class="container page-content" style="padding-top: 2rem">
+    <div style="margin-bottom: 2rem;">
+      <h1>Downloads</h1>
+      <p style="margin-top: 0.5rem;">
+        Hier findest du alle wichtigen Dokumente und Dateien zum Herunterladen.
+      </p>
+    </div>
     <DownloadList categories={categories} />
   </div>
 </Base>

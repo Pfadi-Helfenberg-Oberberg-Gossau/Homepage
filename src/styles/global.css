@@ -11,6 +11,7 @@
   --color-background: #ffffff;
   --color-border: #dedede;
   --color-border-light: #f0ebe9;
+  --color-link: #a0522d; 
 
   /* Typography */
   --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
@@ -105,7 +106,7 @@ p:last-child {
 
 /* Links */
 a {
-  color: var(--color-primary);
+  color: var(--color-link);
   text-decoration: none;
   transition: opacity var(--transition-fast);
 }
