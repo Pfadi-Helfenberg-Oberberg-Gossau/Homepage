@@ -130,6 +130,22 @@ const stufenGrupped = stufenleitung.reduce((acc: Record<string, StufenleitungEnt
       </section>
     )}
 
+    {grouped['elternrat'] && (
+      <section>
+        <h2>Elternrat</h2>
+        <div class="team-grid">
+          {grouped['elternrat'].map((r: AbteilungEntry) => (
+            <PersonCard
+              name={`${r.person.first_name} ${r.person.last_name}`}
+              nickname={r.person.nickname}
+              email={r.person.email}
+              photo={r.person.photo ? `${import.meta.env.DIRECTUS_URL}/assets/${r.person.photo}` : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
     {grouped['medienteam'] && (
       <section>
         <h2>Medienteam</h2>

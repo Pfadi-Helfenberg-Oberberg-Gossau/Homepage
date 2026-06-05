@@ -8,7 +8,6 @@ services:
     command: sleep infinity
     restart: unless-stopped
     networks:
-      - pfadi-dev
       - traefik-net
     labels:
       - "traefik.enable=true"
@@ -18,39 +17,6 @@ services:
       - "traefik.http.services.pfadi-astro.loadbalancer.server.port=4321"
       - "traefik.docker.network=traefik-net"
 
-  directus:
-    image: directus/directus:11
-    container_name: pfadi-directus-dev
-    restart: unless-stopped
-    environment:
-      SECRET: ${DIRECTUS_SECRET}
-      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
-      DB_CLIENT: sqlite3
-      DB_FILENAME: /directus/database/dev.db
-      WEBSOCKETS_ENABLED: false
-    volumes:
-      - pfadi-directus-db:/directus/database
-      - pfadi-directus-uploads:/directus/uploads
-    networks:
-      - pfadi-dev
-      - traefik-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pfadi-directus.rule=Host(`directus.yofukashi.dev`)"
-      - "traefik.http.routers.pfadi-directus.entrypoints=websecure"
-      - "traefik.http.routers.pfadi-directus.tls.certresolver=cfresolver"
-      - "traefik.http.services.pfadi-directus.loadbalancer.server.port=8055"
-      - "traefik.docker.network=traefik-net"
-
-volumes:
-  pfadi-directus-db:
-    name: pfadi-directus-dev-db
-  pfadi-directus-uploads:
-    name: pfadi-directus-dev-uploads
-
 networks:
-  pfadi-dev:
-    name: pfadi-dev
   traefik-net:
     external: true
