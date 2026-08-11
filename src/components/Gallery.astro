@@ -1,0 +1,268 @@
+---
+import { X, ChevronLeft, ChevronRight } from '@lucide/astro';
+
+interface GalleryImage {
+  src: string;
+  alt: string;
+}
+
+interface GallerySection {
+  title: string;
+  images: GalleryImage[];
+}
+
+interface Props {
+  sections: GallerySection[];
+}
+
+const { sections } = Astro.props;
+
+// Flatten all images across sections into one list so the lightbox can
+// navigate through the whole gallery, not just the current section.
+const allImages = sections.flatMap((section) => section.images);
+let runningIndex = 0;
+---
+
+<div class="gallery">
+  {sections.map((section) => {
+    const sectionStartIndex = runningIndex;
+    runningIndex += section.images.length;
+    return (
+      <section class="gallery-section">
+        <h2 class="gallery-section__title">{section.title}</h2>
+        <div class="gallery-grid">
+          {section.images.map((image, i) => (
+            <button
+              type="button"
+              class="gallery-thumb"
+              data-index={sectionStartIndex + i}
+              aria-label={`${image.alt} vergrössern`}
+            >
+              <img src={image.src} alt={image.alt} loading="lazy" />
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+  })}
+</div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Bildansicht">
+  <button type="button" class="lightbox__close" id="lightbox-close" aria-label="Schliessen">
+    <X size={28} />
+  </button>
+
+  <button type="button" class="lightbox__nav lightbox__nav--prev" id="lightbox-prev" aria-label="Vorheriges Bild">
+    <ChevronLeft size={32} />
+  </button>
+
+  <div class="lightbox__stage">
+    <img class="lightbox__image" id="lightbox-image" src="" alt="" />
+    <p class="lightbox__counter" id="lightbox-counter"></p>
+  </div>
+
+  <button type="button" class="lightbox__nav lightbox__nav--next" id="lightbox-next" aria-label="Nächstes Bild">
+    <ChevronRight size={32} />
+  </button>
+</div>
+
+<script define:vars={{ images: allImages }}>
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImage = document.getElementById('lightbox-image');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
+  const thumbs = document.querySelectorAll('.gallery-thumb');
+
+  let currentIndex = 0;
+
+  function openLightbox(index) {
+    currentIndex = index;
+    updateImage();
+    lightbox.classList.add('lightbox--open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('lightbox--open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function updateImage() {
+    const image = images[currentIndex];
+    if (!image) return;
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt;
+    lightboxCounter.textContent = `${currentIndex + 1} / ${images.length}`;
+  }
+
+  function showPrev() {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    updateImage();
+  }
+
+  function showNext() {
+    currentIndex = (currentIndex + 1) % images.length;
+    updateImage();
+  }
+
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener('click', () => {
+      const index = parseInt(thumb.getAttribute('data-index') || '0', 10);
+      openLightbox(index);
+    });
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', showPrev);
+  nextBtn.addEventListener('click', showNext);
+
+  // Click outside the image (on the dark backdrop) closes the lightbox.
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('lightbox--open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') showPrev();
+    if (e.key === 'ArrowRight') showNext();
+  });
+
+  // Basic swipe support for touch devices.
+  let touchStartX = 0;
+  lightbox.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  lightbox.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const delta = touchEndX - touchStartX;
+    const threshold = 40;
+    if (delta > threshold) showPrev();
+    else if (delta < -threshold) showNext();
+  }, { passive: true });
+</script>
+
+<style>
+  .gallery-section {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .gallery-section__title {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--spacing-xs, 0.75rem);
+  }
+
+  .gallery-thumb {
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    padding: 0;
+    background: var(--color-border);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  .gallery-thumb:hover,
+  .gallery-thumb:focus-visible {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+  }
+
+  .gallery-thumb:hover img {
+    transform: scale(1.04);
+  }
+
+  /* Lightbox overlay */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .lightbox--open {
+    display: flex;
+  }
+
+  .lightbox__stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+
+  .lightbox__image {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: var(--border-radius);
+  }
+
+  .lightbox__counter {
+    color: #fff;
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+    margin: 0;
+  }
+
+  .lightbox__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+  }
+
+  .lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.75rem;
+    display: flex;
+  }
+
+  .lightbox__nav--prev {
+    left: 0.5rem;
+  }
+
+  .lightbox__nav--next {
+    right: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .lightbox__nav {
+      padding: 0.5rem;
+    }
+  }
+</style>

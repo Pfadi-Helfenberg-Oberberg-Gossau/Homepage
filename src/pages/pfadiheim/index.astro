@@ -1,13 +1,248 @@
 ---
-import client from '@/lib/directus';
-import { serverInfo } from '@directus/sdk';
-import Base from '@/layouts/Base.astro';
+import Base from "@/layouts/Base.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import BuchungsForm from "@/components/BuchungsForm.astro";
+import client from "@/lib/directus";
+import { readSingleton } from "@directus/sdk";
 
-const info = await client.request(serverInfo());
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+
+// ASSUMPTION: singleton collection "Pfadiheim" with these fields.
+// Adjust field names below once you confirm/create the actual collection.
+async function readSingletonSafe() {
+  try {
+    return await client.request(
+      readSingleton("Pfadiheim", {
+        fields: ["name", "intro_text", "hero_image", "address"],
+      }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+const pfadiheim = await readSingletonSafe();
+
+const heroImageUrl = pfadiheim?.hero_image
+  ? `${DIRECTUS_URL}/assets/${pfadiheim.hero_image}`
+  : null;
+
+const subpages = [
+  {
+    title: "Bilder",
+    description: "Grundriss und Impressionen vom Pfadiheim.",
+    href: "/pfadiheim/bilder",
+  },
+  {
+    title: "Dokumente",
+    description: "Heimbeschreibung und Bedienungsanleitungen zum Download.",
+    href: "/pfadiheim/dokumente",
+  },
+  {
+    title: "Preise",
+    description: "Mietpreise und Nebenkosten im Überblick.",
+    href: "/pfadiheim/preise",
+  },
+  {
+    title: "AGB",
+    description: "Allgemeine Geschäftsbedingungen für die Vermietung.",
+    href: "/pfadiheim/agb",
+  },
+  {
+    title: "Stiftung Heim",
+    description: "Trägerschaft und Hintergrund des Pfadiheims.",
+    href: "/pfadiheim/stiftung-heim",
+  },
+];
 ---
 
-<Base title="Startseite">
-  <div class="container" style="padding-top: 2rem">
-    <h1>Willkommen bei der Pfadi Gossau</h1>
-  </div>
+<Base title="Pfadiheim">
+  <main class="main-content">
+    <div class="container">
+    <div class="pfadiheim-wrapper">
+      <div class="pfadiheim-hero">
+        <div class="pfadiheim-hero__text">
+          <h1>{pfadiheim?.name ?? 'Pfadiheim «Am Buechenwald»'}</h1>
+          {pfadiheim?.intro_text ? (
+            <div class="pfadiheim-hero__intro" set:html={pfadiheim.intro_text} />
+          ) : (
+            <p>
+              Unser Pfadiheim steht im Kanton St.Gallen, angrenzend an die Stadt Gossau, direkt neben einem grossen Wald.
+            </p>
+          )}
+          {pfadiheim?.address && <p class="pfadiheim-hero__address">{pfadiheim.address}</p>}
+        </div>
+        {heroImageUrl && (
+          <div class="pfadiheim-hero__image">
+            <img src={heroImageUrl} alt={pfadiheim?.name ?? "Pfadiheim Am Buechenwald"} loading="eager" />
+          </div>
+        )}
+      </div>
+
+      {/* Fixed facts about the building - not editorial content, so hardcoded rather than CMS-driven */}
+      <div class="pfadiheim-facts">
+        <div class="pfadiheim-fact">
+          <span class="pfadiheim-fact__value">40</span>
+          <span class="pfadiheim-fact__label">Schlafplätze</span>
+        </div>
+        <div class="pfadiheim-fact">
+          <span class="pfadiheim-fact__value">650 m ü. M.</span>
+          <span class="pfadiheim-fact__label">Höhe</span>
+        </div>
+        <div class="pfadiheim-fact">
+          <span class="pfadiheim-fact__value">Ja / Parterre</span>
+          <span class="pfadiheim-fact__label">Rollstuhlgängig</span>
+        </div>
+        <div class="pfadiheim-fact">
+          <span class="pfadiheim-fact__value">800 m / 10 Min.</span>
+          <span class="pfadiheim-fact__label">Distanz zu ÖV</span>
+        </div>
+      </div>
+
+      <section class="pfadiheim-section">
+        <div class="pfadiheim-section__inner pfadiheim-section__inner--kalender">
+          <h2>Kalender Pfadiheim</h2>
+          <div class="pfadiheim-kalender__frame">
+            <iframe
+              src="https://calendar.google.com/calendar/b/1/embed?height=600&wkst=2&bgcolor=%23ffffff&ctz=Europe%2FZurich&src=NWRuZzBxYzRhZmMwZXJta2Z0amtqa2pidG9AZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=czAwZ3E5NTl2YWhmdWRmZjdzaWJubHZtdGNAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=ZWJ0bGNrOWU2cWM2OHFibGl0b2Y2OTQyZW9AZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&color=%233F51B5&color=%230B8043&color=%23F6BF26&showTz=0&showCalendars=0&showTabs=0&showPrint=0&showDate=1&showTitle=0&showNav=1"
+              width="100%"
+              height="600"
+              scrolling="no"
+              loading="lazy"
+              title="Kalender Pfadiheim"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="pfadiheim-section">
+        <div class="pfadiheim-section__inner pfadiheim-section__inner--formular">
+          <h2>Buchungsanfrage</h2>
+          <BuchungsForm />
+        </div>
+      </section>
+
+      <section class="pfadiheim-section">
+        <h2>Weitere Informationen</h2>
+        <div class="pfadiheim-cards">
+          {subpages.map((page) => (
+            <SectionCard title={page.title} description={page.description} href={page.href} />
+          ))}
+        </div>
+      </section>
+    </div>
+    </div>
+  </main>
 </Base>
+
+<style>
+  .pfadiheim-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .pfadiheim-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: center;
+    padding: var(--spacing-lg) 0;
+  }
+
+  .pfadiheim-hero__text {
+    flex: 1 1 360px;
+  }
+
+  .pfadiheim-hero__address {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .pfadiheim-hero__intro :global(p) {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+  }
+
+  .pfadiheim-hero__intro :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .pfadiheim-hero__image {
+    flex: 1 1 360px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .pfadiheim-hero__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pfadiheim-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .pfadiheim-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .pfadiheim-fact__value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .pfadiheim-fact__label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pfadiheim-section {
+    margin-bottom: var(--spacing-xl, 3rem);
+  }
+
+  .pfadiheim-section h2 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .pfadiheim-section__inner {
+    margin: 0 auto;
+  }
+
+  .pfadiheim-section__inner--kalender {
+    max-width: 800px;
+  }
+
+  .pfadiheim-section__inner--formular {
+    max-width: 640px;
+  }
+
+  .pfadiheim-kalender__frame {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .pfadiheim-kalender__frame iframe {
+    display: block;
+    border: none;
+  }
+
+  .pfadiheim-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-sm);
+  }
+</style>

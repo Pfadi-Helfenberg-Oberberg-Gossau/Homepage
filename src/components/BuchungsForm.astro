@@ -1,0 +1,251 @@
+---
+// Reusable Buchungsanfrage form. Used embedded on /pfadiheim, and optionally
+// on a standalone /pfadiheim/buchungsanfrage page if you keep one around.
+---
+
+<form class="buchung-form" id="buchung-form" novalidate>
+  <div class="form-group">
+    <label for="organisation">Organisation *</label>
+    <input type="text" id="organisation" name="organisation" required />
+  </div>
+
+  <div class="form-group">
+    <label for="anlass">Art des Anlasses *</label>
+    <input type="text" id="anlass" name="anlass" required />
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="vorname">Vorname *</label>
+      <input type="text" id="vorname" name="vorname" placeholder="Vorname" required autocomplete="given-name" />
+    </div>
+
+    <div class="form-group">
+      <label for="nachname">Nachname *</label>
+      <input type="text" id="nachname" name="nachname" placeholder="Nachname" required autocomplete="family-name" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="adresse">Adresse *</label>
+    <input type="text" id="adresse" name="adresse" placeholder="Strasse" required autocomplete="street-address" />
+  </div>
+
+  <div class="form-row">
+    <div class="form-group form-group--narrow">
+      <label for="plz">Postleitzahl *</label>
+      <input type="text" id="plz" name="plz" placeholder="Postleitzahl" required inputmode="numeric" autocomplete="postal-code" />
+    </div>
+
+    <div class="form-group">
+      <label for="stadt">Stadt *</label>
+      <input type="text" id="stadt" name="stadt" placeholder="Stadt" required autocomplete="address-level2" />
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="telefon">Telefon *</label>
+      <input type="tel" id="telefon" name="telefon" placeholder="079 123 45 67" required autocomplete="tel" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required autocomplete="email" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="anzahl">Anzahl Personen *</label>
+    <input type="number" id="anzahl" name="anzahl" min="1" required />
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="datum_von">Datum von *</label>
+      <input type="date" id="datum_von" name="datum_von" required />
+    </div>
+
+    <div class="form-group">
+      <label for="datum_bis">Datum bis *</label>
+      <input type="date" id="datum_bis" name="datum_bis" required />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="betreff">Betreff *</label>
+    <input type="text" id="betreff" name="betreff" required />
+  </div>
+
+  <div class="form-group">
+    <label for="bemerkung">Bemerkung (optional)</label>
+    <textarea id="bemerkung" name="bemerkung" rows="5"></textarea>
+  </div>
+
+  <p class="datenschutz-hinweis">
+    Mit dem Absenden dieses Formulars erklären Sie sich mit unserer <a href="/datenschutz">Datenschutzerklärung</a> einverstanden.
+  </p>
+
+  <div class="form-checkbox">
+    <input type="checkbox" id="wohnsitz" name="wohnsitz" required />
+    <label for="wohnsitz">Mein Wohnsitz respektive mein Firmensitz ist in der Schweiz *</label>
+  </div>
+
+  <div class="form-status" id="form-status" aria-live="polite"></div>
+
+  <button type="submit" class="btn" id="submit-btn">Senden</button>
+</form>
+
+<script>
+  const form = document.getElementById('buchung-form') as HTMLFormElement;
+  const status = document.getElementById('form-status') as HTMLDivElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Wird gesendet…';
+    status.textContent = '';
+    status.className = 'form-status';
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch('/api/booking', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        status.textContent = 'Ihre Buchungsanfrage wurde erfolgreich gesendet. Wir melden uns baldmöglichst bei Ihnen.';
+        status.classList.add('form-status--success');
+        form.reset();
+      } else {
+        throw new Error('Fehler beim Senden');
+      }
+    } catch {
+      status.textContent = 'Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+      status.classList.add('form-status--error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Senden';
+    }
+  });
+</script>
+
+<style>
+  .buchung-form {
+    margin-top: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .form-row {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .form-row .form-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .form-row .form-group--narrow {
+    flex: 0 0 40%;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  label {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    background-color: var(--color-background);
+    transition: border-color var(--transition-fast);
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .datenschutz-hinweis {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+  }
+
+  .form-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+  }
+
+  .form-checkbox input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+    accent-color: var(--color-primary);
+  }
+
+  .form-checkbox label {
+    font-weight: 400;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  .form-status {
+    font-size: var(--font-size-sm);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    display: none;
+  }
+
+  .form-status:not(:empty) {
+    display: block;
+  }
+
+  .form-status--success {
+    background-color: #f0faf0;
+    color: #2d6a2d;
+    border: 1px solid #b6ddb6;
+  }
+
+  .form-status--error {
+    background-color: #fdf0f0;
+    color: #8b2020;
+    border: 1px solid #e8b4b4;
+  }
+
+  @media (max-width: 480px) {
+    .form-row {
+      flex-direction: column;
+    }
+
+    .form-row .form-group--narrow {
+      flex: 1;
+    }
+  }
+</style>

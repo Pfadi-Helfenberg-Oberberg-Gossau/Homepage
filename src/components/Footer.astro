@@ -120,11 +120,11 @@ const logos = [
     margin-top: var(--spacing-lg);
   }
   .footer-main {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
-    align-items: start;
   }
   h3 {
     color: var(--color-text-light);

@@ -1,0 +1,175 @@
+---
+import Base from "@/layouts/Base.astro";
+import client from "@/lib/directus";
+import { readItems, readSingleton } from "@directus/sdk";
+
+async function getCategories() {
+  try {
+    return await client.request(
+      readItems("pfadiheim_price_categories", {
+        filter: { status: { _eq: "published" } },
+        fields: [
+          "id",
+          "name",
+          "price_short_camp",
+          "price_long_camp",
+          "price_minimum_flat",
+          "price_day_event",
+        ],
+        sort: ["sort"],
+      }),
+    );
+  } catch (err) {
+    console.error("Preiskategorien fetch failed:", err);
+    return [];
+  }
+}
+
+async function getPreiseText() {
+  try {
+    return await client.request(
+      readSingleton("pfadiheim_price_inclusions", {
+        fields: ["include_overnight", "include_day", "not_included"],
+      }),
+    );
+  } catch (err) {
+    console.error("pfadiheim_price_inclusions fetch failed:", err);
+    return null;
+  }
+}
+
+const categories = await getCategories();
+const preiseText = await getPreiseText();
+
+function formatPrice(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "–";
+  return `Fr. ${value.toFixed(2)}`;
+}
+---
+
+<Base title="Preise">
+  <main class="main-content">
+    <div class="container">
+      <div class="preise-wrapper">
+        <h1>Preise</h1>
+        <p>Auszug aus der Preisliste (gültig ist nur die vollständige Preisliste)</p>
+
+        <section class="preise-section">
+          <h2>Vermietung für Lager und Weekend mit Übernachtung</h2>
+          <div class="preise-table-scroll">
+            <table class="preise-table">
+              <thead>
+                <tr>
+                  <th>Preis pro Person</th>
+                  <th>Kurzlager<br />1–3 Nächte</th>
+                  <th>Lager über<br />3 Nächte</th>
+                  <th>Mindest-<br />Pauschale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((category: any) => (
+                  <tr>
+                    <td>{category.name}</td>
+                    <td>{formatPrice(category.price_short_camp)}</td>
+                    <td>{formatPrice(category.price_long_camp)}</td>
+                    <td>{formatPrice(category.price_minimum_flat)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {preiseText?.include_overnight && (
+            <div class="preise-included" set:html={preiseText.include_overnight} />
+          )}
+        </section>
+
+        <section class="preise-section">
+          <h2>Vermietung für andere Anlässe ohne Übernachtung</h2>
+          <div class="preise-table-scroll">
+            <table class="preise-table">
+              <thead>
+                <tr>
+                  <th>Preis pro Anlass</th>
+                  <th>Pauschale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((category: any) => (
+                  <tr>
+                    <td>{category.name}</td>
+                    <td>{formatPrice(category.price_day_event)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {preiseText?.include_day && (
+            <div class="preise-included" set:html={preiseText.include_day} />
+          )}
+        </section>
+
+        {preiseText?.not_included && (
+          <section class="preise-section">
+            <div class="preise-not-included" set:html={preiseText.not_included} />
+          </section>
+        )}
+      </div>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .preise-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-lg) 0;
+  }
+
+  .preise-section {
+    margin-top: var(--spacing-md, 3rem);
+  }
+
+  .preise-section h2 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .preise-table-scroll {
+    overflow-x: auto;
+  }
+
+  .preise-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+  }
+
+  .preise-table th,
+  .preise-table td {
+    padding: 0.625rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .preise-table th {
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background-color: var(--color-surface, #f9fafb);
+  }
+
+  .preise-included,
+  .preise-not-included {
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+  }
+
+  .preise-included :global(p),
+  .preise-not-included :global(p) {
+    margin-bottom: var(--spacing-xs, 0.5rem);
+  }
+
+  .preise-included :global(ul),
+  .preise-not-included :global(ul) {
+    padding-left: 1.25rem;
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+import Base from "@/layouts/Base.astro";
+import Gallery from "@/components/Gallery.astro";
+import client from "@/lib/directus";
+import { readItems } from "@directus/sdk";
+
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+
+const categories = await client.request(
+  readItems("pfadiheim_gallery_categories", {
+    filter: { status: { _eq: "published" } },
+    fields: [
+      "id",
+      "name",
+      "images.id",
+      "images.alt_text",
+      "images.sort",
+      "images.image.id",
+    ],
+    sort: ["sort"],
+  }),
+);
+
+const sections = categories.map((category: any) => ({
+  title: category.name,
+  images: (category.images ?? [])
+    .filter((img: any) => img.image)
+    .sort((a: any, b: any) => a.sort - b.sort)
+    .map((img: any) => ({
+      src: `${DIRECTUS_URL}/assets/${img.image.id}`,
+      alt: img.alt_text,
+    })),
+}));
+---
+
+<Base title="Bilder">
+  <div class="container page-content" style="padding-top: 2rem">
+    <div style="margin-bottom: 2rem;">
+      <h1>Bilder</h1>
+      <p style="margin-top: 0.5rem;">
+        Grundriss und Impressionen vom Pfadiheim «Am Buechenwald».
+      </p>
+    </div>
+    <Gallery sections={sections} />
+  </div>
+</Base>

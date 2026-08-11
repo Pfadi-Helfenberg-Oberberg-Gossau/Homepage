@@ -7,8 +7,8 @@ import Base from '@/layouts/Base.astro';
     <div class="container">
       <div class="kontakt-wrapper">
         <h1>Kontakt</h1>
-        <p>Mit dem untenstehenden Kontaktformular können Sie uns Anfragen zum Pfadibetrieb, Adressänderungen, Fragen zu den Pfadiaktivitäten und weitere allgemeine Anfragen übermitteln.</p>
-
+        <p>Mit dem untenstehenden Kontaktformular können Sie uns Anfragen zum Pfadibetrieb, Adressänderungen, Fragen zu den Pfadiaktivitäten und weitere allgemeine Anfragen übermitteln. Alternativ können Sie uns auch direkt per E-Mail unter <a href="mailto:info@pfadigossau.ch">info@pfadigossau.ch</a> erreichen. </p>
+        
         <form class="kontakt-form" id="kontakt-form" novalidate>
           <div class="form-group">
             <label for="name">Ihr Name</label>
@@ -38,6 +38,7 @@ import Base from '@/layouts/Base.astro';
 
           <button type="submit" class="btn" id="submit-btn">Nachricht senden</button>
         </form>
+        
       </div>
     </div>
   </main>
@@ -84,6 +85,7 @@ import Base from '@/layouts/Base.astro';
   .kontakt-wrapper {
     max-width: 640px;
     padding: var(--spacing-lg) 0;
+    margin: auto;
   }
 
   .kontakt-form {
