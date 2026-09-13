@@ -2,6 +2,7 @@
 import Base from '@/layouts/Base.astro';
 import client from '@/lib/directus';
 import { readSingleton, readItems } from '@directus/sdk';
+import { Image } from 'astro:assets';
 
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
@@ -23,7 +24,7 @@ const about = await client.request(readSingleton('about', {
     <section class="abschnitt">
       <div class="abschnitt__bild">
         {about.intro_bild && (
-          <img src={`${DIRECTUS_URL}/assets/${about.intro_bild}`} alt="Intro" />
+          <Image src={`${DIRECTUS_URL}/assets/${about.intro_bild}`} alt="Intro" inferSize />
         )}
       </div>
       <div class="abschnitt__text" set:html={about.intro_text} />
@@ -32,7 +33,7 @@ const about = await client.request(readSingleton('about', {
     <section class="abschnitt abschnitt--reverse">
       <div class="abschnitt__bild">
         {about.aktivitaeten_bild && (
-          <img src={`${DIRECTUS_URL}/assets/${about.aktivitaeten_bild}`} alt="Aktivitäten" />
+          <Image src={`${DIRECTUS_URL}/assets/${about.aktivitaeten_bild}`} alt="Aktivitäten" inferSize />
         )}
       </div>
       <div class="abschnitt__text" set:html={about.aktivitaeten_text} />
@@ -41,7 +42,7 @@ const about = await client.request(readSingleton('about', {
     <section class="abschnitt">
       <div class="abschnitt__bild">
         {about.werte_bild && (
-          <img src={`${DIRECTUS_URL}/assets/${about.werte_bild}`} alt="Werte" />
+          <Image src={`${DIRECTUS_URL}/assets/${about.werte_bild}`} alt="Werte" inferSize />
         )}
       </div>
       <div class="abschnitt__text" set:html={about.werte_text} />
@@ -50,7 +51,7 @@ const about = await client.request(readSingleton('about', {
     <section class="abschnitt abschnitt--reverse">
       <div class="abschnitt__bild">
         {about.schnuppern_bild && (
-          <img src={`${DIRECTUS_URL}/assets/${about.schnuppern_bild}`} alt="Pfadiluft schnuppern" />
+          <Image src={`${DIRECTUS_URL}/assets/${about.schnuppern_bild}`} alt="Pfadiluft schnuppern" inferSize/>
         )}
       </div>
       <div class="abschnitt__text" set:html={about.schuppern_text} />
@@ -59,7 +60,7 @@ const about = await client.request(readSingleton('about', {
     <section class="abschnitt">
       <div class="abschnitt__bild">
         {about.pfadiheim_bild && (
-          <img src={`${DIRECTUS_URL}/assets/${about.pfadiheim_bild}`} alt="Pfadiheim" />
+          <Image src={`${DIRECTUS_URL}/assets/${about.pfadiheim_bild}`} alt="Pfadiheim" inferSize />
         )}
       </div>
       <div class="abschnitt__text" set:html={about.pfadiheim_text} />

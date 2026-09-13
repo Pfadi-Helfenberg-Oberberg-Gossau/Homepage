@@ -7,13 +7,15 @@ interface Props {
   photo?: string;
 }
 
+import { Image } from 'astro:assets';
+
 const { name, nickname, role, email, photo } = Astro.props;
 const initials = `${name.split(' ')[0][0]}${name.split(' ')[1]?.[0] ?? ''}`
 ---
 
 <div class="card">
   {photo 
-    ? <img src={photo} alt={name} class="portrait" />
+    ? <Image src={photo} alt={name} class="portrait" inferSize />
     : <div class="portrait initials">{initials}</div>
   }
   <h3>{name}</h3>

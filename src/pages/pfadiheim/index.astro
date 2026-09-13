@@ -4,6 +4,7 @@ import SectionCard from "@/components/SectionCard.astro";
 import BuchungsForm from "@/components/BuchungsForm.astro";
 import client from "@/lib/directus";
 import { readSingleton } from "@directus/sdk";
+import { Image } from 'astro:assets';
 
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
@@ -74,7 +75,7 @@ const subpages = [
         </div>
         {heroImageUrl && (
           <div class="pfadiheim-hero__image">
-            <img src={heroImageUrl} alt={pfadiheim?.name ?? "Pfadiheim Am Buechenwald"} loading="eager" />
+            <Image src={heroImageUrl} alt={pfadiheim?.name ?? "Pfadiheim Am Buechenwald"} loading="eager" inferSize />
           </div>
         )}
       </div>

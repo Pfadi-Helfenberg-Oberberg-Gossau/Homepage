@@ -2,6 +2,7 @@
 import client from "@/lib/directus";
 import { readSingleton } from "@directus/sdk";
 import { Icon } from "astro-icon/components";
+import { Image } from 'astro:assets';
 
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
@@ -95,7 +96,7 @@ const logos = [
               rel="noopener"
               aria-label={logo.alt}
             >
-              <img src={`${DIRECTUS_URL}/assets/${logo.img}`} alt={logo.alt} />
+              <Image src={`${DIRECTUS_URL}/assets/${logo.img}`} alt={logo.alt} inferSize />
             </a>
           ))}
         </div>

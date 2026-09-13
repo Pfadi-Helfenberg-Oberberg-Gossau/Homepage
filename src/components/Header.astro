@@ -1,4 +1,7 @@
 ---
+import logoImage from '../assets/logo.png';
+import { Image } from 'astro:assets';
+
 interface NavChild {
   label: string;
   href: string;
@@ -36,7 +39,7 @@ const currentPath = Astro.url.pathname;
 <header>
   <div class="container">
     <a href="/" class="logo">
-      <img src="/logo.png" alt="Pfadi Gossau" />
+      <Image src={logoImage} alt="Pfadi Gossau" inferSize />
     </a>
     <nav>
       <ul>

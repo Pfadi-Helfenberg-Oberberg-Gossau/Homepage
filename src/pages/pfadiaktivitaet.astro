@@ -2,6 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import client from "@/lib/directus";
 import { readItems } from "@directus/sdk";
+import { Image } from 'astro:assets';
 
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
@@ -72,10 +73,11 @@ function formatTime(time: string) {
           return (
             <section class="stufe-section">
               {stufe.bild_icon && (
-                <img
+                <Image
                   class="stufe-icon"
                   src={`${DIRECTUS_URL}/assets/${stufe.bild_icon}`}
                   alt={stufe.name}
+                  inferSize
                 />
               )}
               <h2 class="stufe-title">{stufe.name}</h2>

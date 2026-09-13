@@ -1,5 +1,6 @@
 ---
 import { X, ChevronLeft, ChevronRight } from '@lucide/astro';
+import { Image } from 'astro:assets';
 
 interface GalleryImage {
   src: string;
@@ -38,7 +39,7 @@ let runningIndex = 0;
               data-index={sectionStartIndex + i}
               aria-label={`${image.alt} vergrössern`}
             >
-              <img src={image.src} alt={image.alt} loading="lazy" />
+              <Image src={image.src} alt={image.alt} inferSize loading="lazy" />
             </button>
           ))}
         </div>

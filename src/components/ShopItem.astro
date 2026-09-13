@@ -1,5 +1,6 @@
 ---
 import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import { Image } from 'astro:assets';
 
 interface Props {
   Artikel: string;
@@ -21,19 +22,21 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
 
 <article class="shop-item">
   <div class="shop-item__image" data-has-second={image2Url ? "true" : "false"}>
-    <img
+    <Image
       class="shop-item__img shop-item__img--active"
       src={imageUrl}
       alt={Artikel}
       loading="lazy"
+      inferSize
     />
     {
       image2Url && (
-        <img
+        <Image
           class="shop-item__img"
           src={image2Url}
           alt={`${Artikel} – Ansicht 2`}
           loading="lazy"
+          inferSize
         />
       )
     }

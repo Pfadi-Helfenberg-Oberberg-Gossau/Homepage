@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import PersonCard from "@/components/PersonCard.astro";
 import client from "@/lib/directus";
 import { readItems } from "@directus/sdk";
+import { Image } from 'astro:assets';
 
 export async function getStaticPaths() {
   const stufen = await client.request(
@@ -72,9 +73,10 @@ const leitpersonen = await client.request(
   {
     stufe.bild_hero && (
       <div class="hero">
-        <img
+        <Image
           src={`${DIRECTUS_URL}/assets/${stufe.bild_hero}`}
           alt={stufe.name}
+          inferSize
         />
         <div class="hero__overlay">
           <div class="container">

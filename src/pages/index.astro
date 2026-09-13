@@ -18,6 +18,8 @@ const stufen = await client.request(
   }),
 );
 
+import { Image } from 'astro:assets';
+
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 ---
 
@@ -25,7 +27,7 @@ const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
   <section class="hero">
     <h1 class="hero__title">{startseite.untertitel}</h1>
     <div class="hero__image">
-      <img src={`${DIRECTUS_URL}/assets/${startseite.hero}`} alt="Hero" />
+      <Image src={`${DIRECTUS_URL}/assets/${startseite.hero}`} alt="Hero" inferSize />
       {
         startseite.hero_context && (
           <p class="hero__caption">{startseite.hero_context}</p>

@@ -1,13 +1,14 @@
 ---
-// src/components/InstagramFeed.astro
+import { Image } from 'astro:assets';
+
 const res = await fetch(`https://feeds.behold.so/YOUR_FEED_ID`);
 const posts = await res.json();
 ---
 
 <div class="insta-grid">
-  {posts.slice(0, 9).map((post) => (
+  {posts.slice(0, 9).map((post:any) => (
     <a href={post.permalink} target="_blank" rel="noopener">
-      <img src={post.sizes.medium.url} alt={post.caption ?? 'Instagram post'} loading="lazy" />
+      <Image src={post.sizes.medium.url} alt={post.caption ?? 'Instagram post'} loading="lazy" inferSize />
     </a>
   ))}
 </div>

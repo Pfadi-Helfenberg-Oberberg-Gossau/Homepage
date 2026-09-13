@@ -8,6 +8,8 @@ interface Props {
   slug: string;
 }
 
+import { Image } from 'astro:assets';
+
 const { name, age_range, description, leitsatz, bild_card, slug } = Astro.props;
 
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
@@ -16,7 +18,7 @@ const imageUrl = `${DIRECTUS_URL}/assets/${bild_card}`;
 
 <a href={`/stufen/${slug}`} class="stufe-card">
   <div class="stufe-card__image">
-    <img src={imageUrl} alt={name} loading="lazy" />
+    <Image src={imageUrl} alt={name} loading="lazy" inferSize />
   </div>
   <div class="stufe-card__body">
     <span class="stufe-card__age">{age_range}</span>

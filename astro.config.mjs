@@ -7,5 +7,8 @@ export default defineConfig({
   integrations: [icon()],
   server: {
     allowedHosts: ['astro.yofukashi.dev']
+  },
+  image: {
+    domains: ['directus.pfadigossau.ch'],
   }
 });
