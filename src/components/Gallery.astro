@@ -3,7 +3,10 @@ import { X, ChevronLeft, ChevronRight } from '@lucide/astro';
 import { Image } from 'astro:assets';
 
 interface GalleryImage {
+  /** Original image, used for the (build-optimized) thumbnail */
   src: string;
+  /** Large optimized version for the lightbox. Falls back to src. */
+  full?: string;
   alt: string;
 }
 
@@ -95,7 +98,7 @@ let runningIndex = 0;
   function updateImage() {
     const image = images[currentIndex];
     if (!image) return;
-    lightboxImage.src = image.src;
+    lightboxImage.src = image.full ?? image.src;
     lightboxImage.alt = image.alt;
     lightboxCounter.textContent = `${currentIndex + 1} / ${images.length}`;
   }

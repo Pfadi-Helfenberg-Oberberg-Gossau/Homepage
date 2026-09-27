@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import Gallery from "@/components/Gallery.astro";
 import client, { assetUrl } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
+import { getImage } from "astro:assets";
 
 const categories = await client.request(
   readItems("pfadiheim_gallery_categories", {
@@ -13,16 +14,23 @@ const categories = await client.request(
   }),
 );
 
-const sections = categories.map((category: any) => ({
-  title: category.name,
-  images: (category.images ?? [])
-    .filter((img: any) => img.image)
-    .sort((a: any, b: any) => a.sort - b.sort)
-    .map((img: any) => ({
-      src: assetUrl(img.image.id)!,
-      alt: img.alt_text,
-    })),
-}));
+// The lightbox gets a large, optimized copy generated at build time and
+// served from Cloudflare, instead of the multi-MB original from Directus.
+const sections = await Promise.all(
+  categories.map(async (category: any) => ({
+    title: category.name,
+    images: await Promise.all(
+      (category.images ?? [])
+        .filter((img: any) => img.image)
+        .sort((a: any, b: any) => a.sort - b.sort)
+        .map(async (img: any) => {
+          const src = assetUrl(img.image.id)!;
+          const full = await getImage({ src, inferSize: true, width: 2000, format: "webp", quality: 80 });
+          return { src, full: full.src, alt: img.alt_text };
+        }),
+    ),
+  })),
+);
 ---
 
 <Base title="Bilder Pfadiheim">

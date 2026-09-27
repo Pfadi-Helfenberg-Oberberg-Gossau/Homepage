@@ -1,14 +1,14 @@
 ---
 import { File, Download } from '@lucide/astro';
+import { downloadUrl, type DownloadCategory } from '@/lib/downloads';
 
 interface Props {
-  categories: any[];
+  categories: DownloadCategory[];
 }
 
 const { categories } = Astro.props;
-const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
-function getFileType(mimeType: string): string {
+function getFileType(mimeType?: string | null): string {
   if (mimeType?.includes("pdf")) return "PDF";
   if (mimeType?.includes("word") || mimeType?.includes("docx")) return "DOCX";
   if (mimeType?.includes("spreadsheet") || mimeType?.includes("xlsx")) return "XLSX";
@@ -16,23 +16,20 @@ function getFileType(mimeType: string): string {
   return "FILE";
 }
 
-function formatFilesize(bytes: number): string {
+function formatFilesize(bytes?: number | null): string {
   if (!bytes) return "";
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 ---
 
-{categories.map((category: any) => (
+{categories.map((category) => (
   <section class="page-section">
     <h2 class="page-section__title">{category.name}</h2>
     <ul class="download-list">
-      {category.files
-        ?.filter((f: any) => f.file)
-        .sort((a: any, b: any) => a.sort - b.sort)
-        .map((f: any) => (
+      {category.files.map((f) => (
           <li>
-            <a class="download-card" href={`${DIRECTUS_URL}/assets/${f.file.id}?download`}>
+            <a class="download-card" href={downloadUrl(f.file)} download>
               <span class="download-card__icon"><File size={24} /></span>
               <span class="download-card__info">
                 <span class="download-card__name">{f.name}</span>
