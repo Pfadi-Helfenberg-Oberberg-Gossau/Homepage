@@ -5,7 +5,7 @@
 // grid's rows (subgrid), so name, v/o, function and email line up across all
 // cards in a row. Missing parts are not rendered at all: their row simply
 // stays empty (0 height), so there are no blank lines or stray margins.
-import { Image } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import { withTransform } from '@/lib/directus';
 
 interface Props {
@@ -20,14 +20,35 @@ const { name, nickname, role, email, photo } = Astro.props;
 const parts = name.trim().split(/\s+/);
 const initials = `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase();
 
-// Let Directus cut a 300x300 square (2x the displayed size). Directus applies
-// the EXIF rotation of phone photos, Astro's size detection does not.
-const portrait = photo ? withTransform(photo, { width: 300, height: 300, fit: 'cover' }) : undefined;
+// Portrait, optimized at build time. First choice: a 300x300 square cut by
+// Directus (2x the displayed size), because Directus applies the EXIF rotation
+// of phone photos. If Directus can't transform the file (e.g. too large), fall
+// back to the original. If that fails too, show the initials and warn, instead
+// of failing the whole build over one photo.
+async function buildPortrait(url: string): Promise<string | undefined> {
+  // The original gets no width: Astro would compute the height from the
+  // unrotated pixel size and crop EXIF-rotated photos (the "chin" bug).
+  const candidates = [
+    { src: withTransform(url, { width: 300, height: 300, fit: 'cover' }), width: 300 },
+    { src: url },
+  ];
+  for (const { src, width } of candidates) {
+    try {
+      const image = await getImage({ src, inferSize: true, width, format: 'webp' });
+      return image.src;
+    } catch {
+      console.warn(`[image] Portrait for ${name} failed: ${src}`);
+    }
+  }
+  return undefined;
+}
+
+const portrait = photo ? await buildPortrait(photo) : undefined;
 ---
 
 <div class="person-card">
   {portrait ? (
-    <Image src={portrait} alt={name} inferSize class="person-card__portrait" />
+    <img src={portrait} alt={name} width="150" height="150" loading="lazy" class="person-card__portrait" />
   ) : (
     <div class="person-card__portrait person-card__initials" aria-hidden="true">{initials}</div>
   )}
