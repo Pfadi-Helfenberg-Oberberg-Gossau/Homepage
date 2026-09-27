@@ -1,4 +1,13 @@
 ---
+// Person with portrait (or initials), name, nickname, function and email.
+//
+// Each part is pinned to a fixed row (1-5) and the card uses the parent
+// grid's rows (subgrid), so name, v/o, function and email line up across all
+// cards in a row. Missing parts are not rendered at all: their row simply
+// stays empty (0 height), so there are no blank lines or stray margins.
+import { Image } from 'astro:assets';
+import { withTransform } from '@/lib/directus';
+
 interface Props {
   name: string;
   nickname?: string;
@@ -7,62 +16,87 @@ interface Props {
   photo?: string;
 }
 
-import { Image } from 'astro:assets';
-
 const { name, nickname, role, email, photo } = Astro.props;
-const initials = `${name.split(' ')[0][0]}${name.split(' ')[1]?.[0] ?? ''}`
+const parts = name.trim().split(/\s+/);
+const initials = `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase();
+
+// Let Directus cut a 300x300 square (2x the displayed size). Directus applies
+// the EXIF rotation of phone photos, Astro's size detection does not.
+const portrait = photo ? withTransform(photo, { width: 300, height: 300, fit: 'cover' }) : undefined;
 ---
 
-<div class="card">
-  {photo 
-    ? <Image src={photo} alt={name} class="portrait" inferSize />
-    : <div class="portrait initials">{initials}</div>
-  }
-  <h3>{name}</h3>
-  {nickname && <p class="nickname">v/o {nickname}</p>}
-  {role && <p class="role">{role}</p>}
-  {email && <a href={`mailto:${email}`}>{email}</a>}
+<div class="person-card">
+  {portrait ? (
+    <Image src={portrait} alt={name} inferSize class="person-card__portrait" />
+  ) : (
+    <div class="person-card__portrait person-card__initials" aria-hidden="true">{initials}</div>
+  )}
+  <h3 class="person-card__name">{name}</h3>
+  {nickname && <p class="person-card__nickname">v/o {nickname}</p>}
+  {role && <p class="person-card__role">{role}</p>}
+  {email && <p class="person-card__email"><a href={`mailto:${email}`}>{email}</a></p>}
 </div>
 
 <style>
-  .card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .person-card {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    row-gap: 0.25rem;
+    justify-items: center;
+    align-content: start;
     text-align: center;
-    gap: var(--spacing-xs);
+    padding-bottom: var(--spacing-md);
   }
 
-  .portrait {
+  /* Fixed rows, so a missing part never shifts the ones below it */
+  .person-card :global(.person-card__portrait) { grid-row: 1; }
+  .person-card__name     { grid-row: 2; }
+  .person-card__nickname { grid-row: 3; }
+  .person-card__role     { grid-row: 4; }
+  .person-card__email    { grid-row: 5; }
+
+  .person-card :global(.person-card__portrait) {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
     object-position: center;
+    margin-bottom: var(--spacing-xs);
   }
 
-  .initials {
+  .person-card__initials {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: var(--font-size-3xl);
     font-weight: 700;
   }
 
-  .nickname {
+  .person-card__name {
+    font-size: var(--font-size-xl);
+    margin: 0;
+  }
+
+  .person-card p {
+    margin: 0;
+    max-width: none;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+  }
+
+  .person-card__nickname {
     font-style: italic;
-    opacity: 0.7;
-    font-size: 0.9rem;
   }
 
-  .role {
-    opacity: 0.7;
-    font-size: 0.9rem;
-  }
-
-  a {
+  .person-card__email {
     font-size: 0.85rem;
+  }
+
+  .person-card__email a {
+    color: var(--color-link);
   }
 </style>

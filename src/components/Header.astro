@@ -316,14 +316,19 @@ const isActive = (href: string) =>
   });
 
   // Shrink header on scroll (debounced to prevent spasm)
-  let lastScroll = 0;
-  window.addEventListener("scroll", () => {
-    const current = window.scrollY;
-    if (current > 80 && !header.classList.contains("scrolled")) {
-      header.classList.add("scrolled");
-    } else if (current <= 80 && header.classList.contains("scrolled")) {
-      header.classList.remove("scrolled");
-    }
-    lastScroll = current;
-  });
+    // Shrink header on scroll. Two thresholds (hysteresis): the gap must be
+  // larger than the header's height change (~55px), otherwise the browser's
+  // scroll correction flips the state back and forth.
+  const SHRINK_AT = 100;
+  const EXPAND_AT = 20;
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      const y = window.scrollY;
+      if (y > SHRINK_AT) header.classList.add("scrolled");
+      else if (y < EXPAND_AT) header.classList.remove("scrolled");
+    },
+    { passive: true },
+  );
 </script>

@@ -6,9 +6,24 @@ const client = createDirectus(import.meta.env.DIRECTUS_URL)
 
 export default client;
 
-/** Full asset URL for a Directus file id, or undefined if there is none */
-export function assetUrl(id?: string | null): string | undefined {
-  return id ? `${import.meta.env.DIRECTUS_URL}/assets/${id}` : undefined;
+type Transform = Record<string, string | number | boolean>;
+
+/**
+ * Add Directus image transformation parameters to an asset URL, e.g.
+ * { width: 300, height: 300, fit: 'cover' }. Directus resizes the image
+ * itself and applies the EXIF rotation of phone photos correctly.
+ */
+export function withTransform(url: string, transform: Transform): string {
+  const u = new URL(url);
+  for (const [key, value] of Object.entries(transform)) u.searchParams.set(key, String(value));
+  return u.toString();
+}
+
+/** Full asset URL for a Directus file id, optionally resized by Directus */
+export function assetUrl(id?: string | null, transform?: Transform): string | undefined {
+  if (!id) return undefined;
+  const url = `${import.meta.env.DIRECTUS_URL}/assets/${id}`;
+  return transform ? withTransform(url, transform) : url;
 }
 
 /** One-line message from a Directus SDK error instead of the full response dump */

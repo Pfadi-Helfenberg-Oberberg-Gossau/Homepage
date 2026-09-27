@@ -1,0 +1,58 @@
+# Redirects from the old WordPress site (301 = moved permanently).
+# Cloudflare Pages reads this file from public/_redirects.
+# First matching rule wins, so specific rules must come before wildcards.
+#
+# Old URLs that exist unchanged on the new site need no rule:
+#   /  /altpfadiverein/  /downloads/  /ueber-uns/
+#   /pfadiheim/  /pfadiheim/agb/  /pfadiheim/stiftung-heim/
+
+# --- Stufen ------------------------------------------------------------------
+# Elternrat is now "Komitee" and shown in the team overview
+/ueber-uns/unsere-stufen/elternrat/         /stufen/abteilungsleitung   301
+/ueber-uns/unsere-stufen/                   /stufen                     301
+# biberstufe, wolfsstufe, pfadistufe, piostufe, roverstufe, abteilungsleitung
+/ueber-uns/unsere-stufen/:stufe/            /stufen/:stufe              301
+
+# --- Pfadiaktivitaet / calendar ----------------------------------------------
+/pfadiaktivitaeten/pfadi-kalender/          /pfadiaktivitaet            301
+/pfadiaktivitaeten/                         /pfadiaktivitaet            301
+
+# --- Pfadiheim ----------------------------------------------------------------
+/pfadiheim/bedienungsanleitungen/           /pfadiheim/dokumente        301
+/pfadiheim/gebaeudeplan/                    /pfadiheim/bilder           301
+/pfadiheim/buchungsanfrage/                 /pfadiheim                  301
+/pfadiheim/kalender-pfadiheim/              /pfadiheim                  301
+
+# --- Altpfadiverein ------------------------------------------------------------
+/altpfadiverein/dokumente/                  /altpfadiverein             301
+/altpfadiverein/vorstand/                   /altpfadiverein             301
+/altpfadiverein/jahresprogramm-altpfadiverein/  /altpfadiverein         301
+
+# --- Ueber uns ------------------------------------------------------------------
+/ueber-uns/datenschutzerklaerung/           /datenschutz                301
+/ueber-uns/geschichte/                      /ueber-uns                  301
+/ueber-uns/aktivitaeten/altpapiersammlung/  /ueber-uns                  301
+/ueber-uns/aktivitaeten/                    /ueber-uns                  301
+/ueber-uns/sport-verein-t/                  /ueber-uns                  301
+/ueber-uns/avia-vereinskarte/               /ueber-uns                  301
+
+# --- Shop, downloads, contact ------------------------------------------------------
+/pfadi-shop/                                /shop                       301
+/downloads/lesestoff/                       /downloads                  301
+/kontakttest/                               /kontakt                    301
+
+# --- TODO: check these targets ------------------------------------------------------
+/pfadifaen-bleibt-pfadifaen/                /altpfadiverein             301
+/pfadi-versand/confirm-action/              /kontakt                    301
+/pfadi-versand/                             /kontakt                    301
+
+# --- The Events Calendar plugin (one page per date, ~90 of them) ----------------------
+/event/*                                    /pfadiaktivitaet            301
+/events/*                                   /pfadiaktivitaet            301
+/event-category/*                           /pfadiaktivitaet            301
+
+# --- WordPress leftovers ------------------------------------------------------------------
+/wp-content/uploads/*                       /downloads                  301
+/feed/*                                     /                           301
+/wp-admin/*                                 /                           301
+/wp-login.php                               /                           301
