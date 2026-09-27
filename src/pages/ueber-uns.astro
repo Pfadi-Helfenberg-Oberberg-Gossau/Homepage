@@ -10,8 +10,6 @@ const about = await client.request(readSingleton('about', {
     'intro_text', 'intro_bild',
     'aktivitaeten_text', 'aktivitaeten_bild',
     'werte_text', 'werte_bild',
-    // NOTE: "schuppern_text" (without n) is the field name in Directus.
-    // Worth renaming to "schnuppern_text" there and here at some point.
     'schnuppern_text', 'schnuppern_bild',
     'pfadiheim_text', 'pfadiheim_bild',
   ],
@@ -21,7 +19,7 @@ const abschnitte = [
   { text: about.intro_text, bild: about.intro_bild, alt: 'Pfadi Gossau' },
   { text: about.aktivitaeten_text, bild: about.aktivitaeten_bild, alt: 'Pfadiaktivität' },
   { text: about.werte_text, bild: about.werte_bild, alt: 'Unsere Werte' },
-  { text: about.schuppern_text, bild: about.schnuppern_bild, alt: 'Pfadiluft schnuppern' },
+  { text: about.schnuppern_text, bild: about.schnuppern_bild, alt: 'Pfadiluft schnuppern' },
   { text: about.pfadiheim_text, bild: about.pfadiheim_bild, alt: 'Pfadiheim' },
 ].filter((a) => a.text || a.bild);
 ---

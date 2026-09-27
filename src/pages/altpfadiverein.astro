@@ -1,0 +1,55 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import DownloadList from '@/components/DownloadList.astro';
+import PersonGroup from '@/components/PersonGroup.astro';
+import { readSingletonSafe } from '@/lib/directus';
+
+// Singleton "altpfadiverein":
+//   inhalt     WYSIWYG
+//   dokumente  Files (many-to-many to directus_files)
+type Datei = { id: string; title?: string; filename_download?: string; type?: string; filesize?: number };
+
+const seite = await readSingletonSafe<{
+  inhalt?: string;
+  dokumente?: { directus_files_id: Datei | null }[];
+}>('altpfadiverein', [
+  'inhalt',
+  'dokumente.directus_files_id.id',
+  'dokumente.directus_files_id.title',
+  'dokumente.directus_files_id.filename_download',
+  'dokumente.directus_files_id.type',
+  'dokumente.directus_files_id.filesize',
+]);
+
+// Shape the files like the download categories so DownloadList can render them.
+// The display name is the file's title in Directus (editable in the file library).
+const dateien = (seite?.dokumente ?? [])
+  .map((d) => d.directus_files_id)
+  .filter((f): f is Datei => Boolean(f));
+
+const dokumente = dateien.length > 0
+  ? [{
+      name: 'Dokumente',
+      files: dateien.map((f, i) => ({
+        name: f.title ?? f.filename_download ?? 'Dokument',
+        sort: i,
+        file: f,
+      })),
+    }]
+  : [];
+---
+
+<Base title="Altpfadiverein">
+  <PageHeader title="Altpfadiverein" />
+
+  {seite?.inhalt && (
+    <section class="page-section">
+      <div class="prose" set:html={seite.inhalt} />
+    </section>
+  )}
+
+  <DownloadList categories={dokumente} />
+
+  <PersonGroup collection="altpfadiverein_vorstand" title="Vorstand" />
+</Base>

@@ -11,7 +11,7 @@ const pfadiheim = await readSingletonSafe<{
   intro_text?: string;
   hero_image?: string;
   address?: string;
-}>("Pfadiheim", ["name", "intro_text", "hero_image", "address"]);
+}>("pfadiheim", ["name", "intro_text", "hero_image", "address"]);
 
 const name = pfadiheim?.name ?? "Pfadiheim «Am Buechenwald»";
 

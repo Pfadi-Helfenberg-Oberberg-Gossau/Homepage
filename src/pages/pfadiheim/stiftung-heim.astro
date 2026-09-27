@@ -1,18 +1,23 @@
 ---
 import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import PersonGroup from '@/components/PersonGroup.astro';
 import { readSingletonSafe } from '@/lib/directus';
 
-// ASSUMPTION: singleton "pfadiheim_stiftung" with a WYSIWYG field "inhalt"
 const seite = await readSingletonSafe<{ inhalt?: string }>('pfadiheim_stiftung', ['inhalt']);
 ---
 
 <Base title="Stiftung Heim">
-  <PageHeader title="Stiftung Heim" subtitle="Trägerschaft und Hintergrund des Pfadiheims." />
+  <PageHeader
+    title="Stiftung Heim"
+    subtitle="Trägerschaft und Hintergrund des Pfadiheims."
+  />
 
-  {seite?.inhalt ? (
-    <div class="prose" set:html={seite.inhalt} />
-  ) : (
-    <p>Dieser Inhalt wird zurzeit überarbeitet.</p>
+  {seite?.inhalt && (
+    <section class="page-section">
+      <div class="prose" set:html={seite.inhalt} />
+    </section>
   )}
+
+  <PersonGroup collection="stiftungsrat" title="Stiftungsrat" />
 </Base>

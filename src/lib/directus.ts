@@ -11,6 +11,12 @@ export function assetUrl(id?: string | null): string | undefined {
   return id ? `${import.meta.env.DIRECTUS_URL}/assets/${id}` : undefined;
 }
 
+/** One-line message from a Directus SDK error instead of the full response dump */
+export function directusError(err: unknown): string {
+  const e = err as { errors?: { message?: string }[]; message?: string };
+  return e?.errors?.[0]?.message ?? e?.message ?? String(err);
+}
+
 /**
  * Read a singleton without breaking the build if the collection doesn't exist
  * yet or is empty. Returns null on failure so the page can render a fallback.
@@ -22,7 +28,7 @@ export async function readSingletonSafe<T = Record<string, any>>(
   try {
     return (await client.request(readSingleton(collection as any, { fields } as any))) as T;
   } catch (err) {
-    console.error(`readSingleton("${collection}") failed:`, err);
+    console.warn(`[directus] ${collection}: ${directusError(err)}`);
     return null;
   }
 }

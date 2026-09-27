@@ -1,0 +1,71 @@
+---
+// Titled grid of people from a Directus collection with the fields
+// status, sort, person (M2O to "team") and funktion (optional).
+// Renders nothing if the collection is empty or can't be read.
+//
+//   <PersonGroup collection="stiftungsrat" title="Stiftungsrat" />
+import PersonCard from './PersonCard.astro';
+import client, { assetUrl, directusError } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+interface Props {
+  collection: string;
+  title: string;
+  /** Show email addresses on the cards (default: true) */
+  showEmail?: boolean;
+}
+
+type Entry = {
+  funktion?: string;
+  person: {
+    first_name: string;
+    last_name: string;
+    nickname?: string;
+    photo?: string;
+    email?: string;
+  };
+};
+
+const { collection, title, showEmail = true } = Astro.props;
+
+async function getEntries(): Promise<Entry[]> {
+  try {
+    return (await client.request(
+      readItems(collection as any, {
+        filter: { status: { _eq: 'published' } },
+        fields: [
+          'funktion',
+          'person.first_name',
+          'person.last_name',
+          'person.nickname',
+          'person.photo',
+          'person.email',
+        ],
+        sort: ['sort'],
+      } as any),
+    )) as Entry[];
+  } catch (err) {
+    console.warn(`[directus] ${collection}: ${directusError(err)}`);
+    return [];
+  }
+}
+
+const entries = (await getEntries()).filter((e) => e.person);
+---
+
+{entries.length > 0 && (
+  <section class="page-section">
+    <h2 class="page-section__title">{title}</h2>
+    <div class="person-grid">
+      {entries.map((e) => (
+        <PersonCard
+          name={`${e.person.first_name} ${e.person.last_name}`}
+          nickname={e.person.nickname}
+          role={e.funktion}
+          email={showEmail ? e.person.email : undefined}
+          photo={assetUrl(e.person.photo)}
+        />
+      ))}
+    </div>
+  </section>
+)}
