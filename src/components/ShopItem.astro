@@ -6,18 +6,22 @@ interface Props {
   Artikel: string;
   Beschreibung?: string;
   Preis: number;
+  /** Optional second price, e.g. for kids' sizes. If set, both prices are shown. */
+  Preis_Kinder?: number | null;
   Bild: string;
   Bild2?: string;
 }
 
-const { Artikel, Beschreibung, Preis, Bild, Bild2 } = Astro.props;
+const { Artikel, Beschreibung, Preis, Preis_Kinder, Bild, Bild2 } = Astro.props;
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 const imageUrl = `${DIRECTUS_URL}/assets/${Bild}`;
 const image2Url = Bild2 ? `${DIRECTUS_URL}/assets/${Bild2}` : null;
-const formattedPrice = new Intl.NumberFormat("de-CH", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format(Preis);
+const formatPrice = (value: number) =>
+  `CHF ${new Intl.NumberFormat("de-CH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)}`;
+const hasKidsPrice = Preis_Kinder !== null && Preis_Kinder !== undefined;
 ---
 
 <article class="shop-item">
@@ -66,7 +70,20 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
   <div class="shop-item__info">
     <h3 class="shop-item__title">{Artikel}</h3>
     {Beschreibung && <p class="shop-item__desc">{Beschreibung}</p>}
-    <p class="shop-item__price">CHF {formattedPrice}</p>
+    {hasKidsPrice ? (
+      <dl class="shop-item__prices">
+        <div>
+          <dt>Erwachsene</dt>
+          <dd>{formatPrice(Preis)}</dd>
+        </div>
+        <div>
+          <dt>Kinder</dt>
+          <dd>{formatPrice(Preis_Kinder!)}</dd>
+        </div>
+      </dl>
+    ) : (
+      <p class="shop-item__price">{formatPrice(Preis)}</p>
+    )}
   </div>
 </article>
 
@@ -159,6 +176,24 @@ const formattedPrice = new Intl.NumberFormat("de-CH", {
   .shop-item__price {
     color: var(--color-text);
     font-size: 1rem;
+  }
+  .shop-item__prices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0;
+  }
+  .shop-item__prices div {
+    display: flex;
+    gap: var(--spacing-xs);
+  }
+  .shop-item__prices dt {
+    min-width: 6.5rem;
+    color: var(--color-text-muted);
+  }
+  .shop-item__prices dd {
+    margin: 0;
+    color: var(--color-text);
   }
   @media (max-width: 640px) {
     .shop-item {
