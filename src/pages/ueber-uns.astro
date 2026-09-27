@@ -1,77 +1,50 @@
 ---
 import Base from '@/layouts/Base.astro';
-import client from '@/lib/directus';
-import { readSingleton, readItems } from '@directus/sdk';
+import PageHeader from '@/components/PageHeader.astro';
+import client, { assetUrl } from '@/lib/directus';
+import { readSingleton } from '@directus/sdk';
 import { Image } from 'astro:assets';
-
-const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
 const about = await client.request(readSingleton('about', {
   fields: [
     'intro_text', 'intro_bild',
     'aktivitaeten_text', 'aktivitaeten_bild',
     'werte_text', 'werte_bild',
-    'schuppern_text', 'schnuppern_bild',
+    // NOTE: "schuppern_text" (without n) is the field name in Directus.
+    // Worth renaming to "schnuppern_text" there and here at some point.
+    'schnuppern_text', 'schnuppern_bild',
     'pfadiheim_text', 'pfadiheim_bild',
   ],
 }));
+
+const abschnitte = [
+  { text: about.intro_text, bild: about.intro_bild, alt: 'Pfadi Gossau' },
+  { text: about.aktivitaeten_text, bild: about.aktivitaeten_bild, alt: 'Pfadiaktivität' },
+  { text: about.werte_text, bild: about.werte_bild, alt: 'Unsere Werte' },
+  { text: about.schuppern_text, bild: about.schnuppern_bild, alt: 'Pfadiluft schnuppern' },
+  { text: about.pfadiheim_text, bild: about.pfadiheim_bild, alt: 'Pfadiheim' },
+].filter((a) => a.text || a.bild);
 ---
 
 <Base title="Über uns">
-  <div class="container" style="padding-top: 2rem">
-    <h1>Wir stellen uns vor…</h1>
+  <PageHeader title="Wir stellen uns vor" />
 
-    <section class="abschnitt">
-      <div class="abschnitt__bild">
-        {about.intro_bild && (
-          <Image src={`${DIRECTUS_URL}/assets/${about.intro_bild}`} alt="Intro" inferSize />
+  {abschnitte.map((a) => {
+    const bildUrl = assetUrl(a.bild);
+    return (
+      <section class="abschnitt">
+        {bildUrl && (
+          <div class="abschnitt__bild">
+            <Image src={bildUrl} alt={a.alt} inferSize loading="lazy" />
+          </div>
         )}
-      </div>
-      <div class="abschnitt__text" set:html={about.intro_text} />
-    </section>
-
-    <section class="abschnitt abschnitt--reverse">
-      <div class="abschnitt__bild">
-        {about.aktivitaeten_bild && (
-          <Image src={`${DIRECTUS_URL}/assets/${about.aktivitaeten_bild}`} alt="Aktivitäten" inferSize />
-        )}
-      </div>
-      <div class="abschnitt__text" set:html={about.aktivitaeten_text} />
-    </section>
-
-    <section class="abschnitt">
-      <div class="abschnitt__bild">
-        {about.werte_bild && (
-          <Image src={`${DIRECTUS_URL}/assets/${about.werte_bild}`} alt="Werte" inferSize />
-        )}
-      </div>
-      <div class="abschnitt__text" set:html={about.werte_text} />
-    </section>
-
-    <section class="abschnitt abschnitt--reverse">
-      <div class="abschnitt__bild">
-        {about.schnuppern_bild && (
-          <Image src={`${DIRECTUS_URL}/assets/${about.schnuppern_bild}`} alt="Pfadiluft schnuppern" inferSize/>
-        )}
-      </div>
-      <div class="abschnitt__text" set:html={about.schuppern_text} />
-    </section>
-
-    <section class="abschnitt">
-      <div class="abschnitt__bild">
-        {about.pfadiheim_bild && (
-          <Image src={`${DIRECTUS_URL}/assets/${about.pfadiheim_bild}`} alt="Pfadiheim" inferSize />
-        )}
-      </div>
-      <div class="abschnitt__text" set:html={about.pfadiheim_text} />
-    </section>
-  </div>
+        {a.text && <div class="abschnitt__text prose" set:html={a.text} />}
+      </section>
+    );
+  })}
 </Base>
 
 <style>
-  h1 {
-    margin-bottom: var(--spacing-lg);
-  }
   .abschnitt {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -80,15 +53,20 @@ const about = await client.request(readSingleton('about', {
     padding: var(--spacing-md) 0;
     border-bottom: 1px solid var(--color-border);
   }
-  .abschnitt:last-child {
+
+  .abschnitt:first-of-type {
+    padding-top: 0;
+  }
+
+  .abschnitt:last-of-type {
     border-bottom: none;
   }
-  .abschnitt--reverse {
-    direction: rtl;
+
+  /* Alternate image left / right */
+  .abschnitt:nth-of-type(even) .abschnitt__bild {
+    order: 2;
   }
-  .abschnitt--reverse > * {
-    direction: ltr;
-  }
+
   .abschnitt__bild img {
     width: 100%;
     height: auto;
@@ -96,15 +74,14 @@ const about = await client.request(readSingleton('about', {
     object-fit: cover;
     aspect-ratio: 4 / 3;
   }
-  .abschnitt__text {
-    font-size: 1rem;
-    line-height: 1.8;
-  }
+
   @media (max-width: 640px) {
-    .abschnitt,
-    .abschnitt--reverse {
+    .abschnitt {
       grid-template-columns: 1fr;
-      direction: ltr;
+    }
+
+    .abschnitt:nth-of-type(even) .abschnitt__bild {
+      order: 0;
     }
   }
 </style>

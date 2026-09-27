@@ -1,0 +1,41 @@
+---
+// ============================================================================
+// TEMPLATE for simple content pages (Impressum, AGB, Stiftung, ...)
+//
+// Files starting with "_" are not turned into routes by Astro, so this file
+// is never published. To use it: copy, rename (e.g. impressum.astro), then
+// adjust TITLE, the Directus collection and the fields.
+//
+// Building blocks:
+//   <PageHeader title subtitle>   plain header (default for most pages)
+//   <PageHero slot="hero" ...>    full-width image header (Stufen, Pfadiheim)
+//   <div class="prose">           rich text from Directus (set:html)
+//   <section class="page-section"> + <h2 class="page-section__title">
+//   <div class="card-grid">       grid of <Card /> components
+// ============================================================================
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import { readSingletonSafe } from '@/lib/directus';
+
+const TITLE = 'Seitentitel';
+
+// Directus singleton with a WYSIWYG field "inhalt"
+const seite = await readSingletonSafe<{ inhalt?: string }>('Collectionname', ['inhalt']);
+---
+
+<Base title={TITLE}>
+  <PageHeader title={TITLE} subtitle="Optionaler Einleitungssatz." />
+
+  {seite?.inhalt ? (
+    <div class="prose" set:html={seite.inhalt} />
+  ) : (
+    <p>Dieser Inhalt wird zurzeit überarbeitet.</p>
+  )}
+
+  <!-- Optional: further sections
+  <section class="page-section">
+    <h2 class="page-section__title">Abschnitt</h2>
+    <p>…</p>
+  </section>
+  -->
+</Base>

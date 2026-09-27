@@ -1,8 +1,9 @@
 ---
-import client from "@/lib/directus";
-import { serverInfo, readItems, readSingleton } from "@directus/sdk";
 import Base from "@/layouts/Base.astro";
-import StufeCard from "@/components/StufeCard.astro";
+import Card from "@/components/Card.astro";
+import client, { assetUrl } from "@/lib/directus";
+import { readItems, readSingleton } from "@directus/sdk";
+import { Image } from "astro:assets";
 
 const startseite = await client.request(
   readSingleton("Startseite", {
@@ -18,70 +19,61 @@ const stufen = await client.request(
   }),
 );
 
-import { Image } from 'astro:assets';
-
-const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+const heroUrl = assetUrl(startseite.hero);
 ---
 
 <Base title="Startseite">
-  <section class="hero">
-    <h1 class="hero__title">{startseite.untertitel}</h1>
-    <div class="hero__image">
-      <Image src={`${DIRECTUS_URL}/assets/${startseite.hero}`} alt="Hero" inferSize />
-      {
-        startseite.hero_context && (
-          <p class="hero__caption">{startseite.hero_context}</p>
-        )
-      }
+  <section class="home-hero" slot="hero">
+    <h1 class="home-hero__title">{startseite.untertitel}</h1>
+    {heroUrl && (
+      <figure class="home-hero__figure">
+        <Image src={heroUrl} alt={startseite.hero_context ?? "Pfadi Gossau"} inferSize loading="eager" />
+        {startseite.hero_context && (
+          <figcaption class="container home-hero__caption">{startseite.hero_context}</figcaption>
+        )}
+      </figure>
+    )}
+  </section>
+
+  <section class="page-section">
+    <h2 class="page-section__title">Unsere Stufen</h2>
+    <div class="card-grid">
+      {stufen.map((stufe) => (
+        <Card
+          href={`/stufen/${stufe.name.toLowerCase()}`}
+          title={stufe.name}
+          image={assetUrl(stufe.bild_card)}
+          eyebrow={stufe.age_range}
+          description={stufe.description}
+          quote={stufe.leitsatz}
+        />
+      ))}
     </div>
   </section>
-  <div class="container">
-    <h1>Unsere Stufen</h1>
-    <div class="stufen-grid">
-      {
-        stufen.map((stufe) => (
-          <StufeCard
-            name={stufe.name}
-            age_range={stufe.age_range}
-            description={stufe.description}
-            leitsatz={stufe.leitsatz}
-            bild_card={stufe.bild_card}
-            slug={stufe.name.toLowerCase()}
-          />
-        ))
-      }
-    </div>
-  </div>
 </Base>
 
 <style>
-  .hero {
-    padding: var(--spacing-lg) 0 0;
+  .home-hero {
+    padding-top: var(--spacing-lg);
   }
-  .hero__title {
+
+  .home-hero__title {
     text-align: center;
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-size: clamp(1.5rem, 4vw, var(--font-size-4xl));
     max-width: 720px;
     margin: 0 auto var(--spacing-lg);
     line-height: 1.3;
     padding: 0 var(--spacing-sm);
   }
-  .hero__image img {
+
+  .home-hero__figure img {
     width: 100%;
     height: auto;
-    display: block;
   }
-  .hero__caption {
+
+  .home-hero__caption {
     font-size: 0.8rem;
-    color: var(--color-text);
-    opacity: 0.6;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    margin-bottom: 36px;
-  }
-  .stufen-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) 0;
+    color: var(--color-text-muted);
+    padding-top: var(--spacing-xs);
   }
 </style>

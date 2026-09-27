@@ -1,9 +1,9 @@
 ---
-// Reusable Buchungsanfrage form. Used embedded on /pfadiheim, and optionally
-// on a standalone /pfadiheim/buchungsanfrage page if you keep one around.
+// Reusable Buchungsanfrage form. Used embedded on /pfadiheim.
+// Styling comes from the shared .form classes in global.css.
 ---
 
-<form class="buchung-form" id="buchung-form" novalidate>
+<form class="form" id="buchung-form" novalidate>
   <div class="form-group">
     <label for="organisation">Organisation *</label>
     <input type="text" id="organisation" name="organisation" required />
@@ -82,7 +82,7 @@
     <textarea id="bemerkung" name="bemerkung" rows="5"></textarea>
   </div>
 
-  <p class="datenschutz-hinweis">
+  <p class="form-hint">
     Mit dem Absenden dieses Formulars erklären Sie sich mit unserer <a href="/datenschutz">Datenschutzerklärung</a> einverstanden.
   </p>
 
@@ -132,120 +132,3 @@
     }
   });
 </script>
-
-<style>
-  .buchung-form {
-    margin-top: var(--spacing-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  .form-row {
-    display: flex;
-    gap: var(--spacing-sm);
-  }
-
-  .form-row .form-group {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .form-row .form-group--narrow {
-    flex: 0 0 40%;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  label {
-    font-weight: 600;
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-  }
-
-  input, textarea {
-    width: 100%;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    font-family: var(--font-body);
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    background-color: var(--color-background);
-    transition: border-color var(--transition-fast);
-  }
-
-  input:focus, textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 120px;
-  }
-
-  .datenschutz-hinweis {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: 0;
-  }
-
-  .form-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.625rem;
-  }
-
-  .form-checkbox input[type="checkbox"] {
-    width: 1.125rem;
-    height: 1.125rem;
-    flex-shrink: 0;
-    margin-top: 0.2rem;
-    accent-color: var(--color-primary);
-  }
-
-  .form-checkbox label {
-    font-weight: 400;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    line-height: 1.5;
-  }
-
-  .form-status {
-    font-size: var(--font-size-sm);
-    padding: 0.75rem;
-    border-radius: var(--border-radius);
-    display: none;
-  }
-
-  .form-status:not(:empty) {
-    display: block;
-  }
-
-  .form-status--success {
-    background-color: #f0faf0;
-    color: #2d6a2d;
-    border: 1px solid #b6ddb6;
-  }
-
-  .form-status--error {
-    background-color: #fdf0f0;
-    color: #8b2020;
-    border: 1px solid #e8b4b4;
-  }
-
-  @media (max-width: 480px) {
-    .form-row {
-      flex-direction: column;
-    }
-
-    .form-row .form-group--narrow {
-      flex: 1;
-    }
-  }
-</style>

@@ -1,5 +1,6 @@
 ---
 import Base from "@/layouts/Base.astro";
+import PageHeader from "@/components/PageHeader.astro";
 import ShopItem from "@/components/ShopItem.astro";
 import client from "@/lib/directus";
 import { readItems } from "@directus/sdk";
@@ -14,24 +15,29 @@ const items = await client.request(
 ---
 
 <Base title="Shop">
-  <div class="container" style="padding-top: 2rem">
-    <div style="margin-bottom: 2rem;">
-      <h1>Shop</h1>
-      <p style="color: var(--color-text, #6b7280); margin-top: 0.5rem;">
-        Hier findest du unsere Pfadi-Merchandise-Artikel. Für Fragen oder einen 
-        Anprobe-Termin melde dich bei <a href="mailto:shop@pfadigossau.ch">shop@pfadigossau.ch</a>.
-      </p>
-    </div>
-    {
-      items.map((item) => (
-        <ShopItem
-          Artikel={item.Artikel}
-          Beschreibung={item.Beschreibung}
-          Preis={item.Preis}
-          Bild={item.Bild}
-          Bild2={item.Bild2}
-        />
-      ))
-    }
+  <PageHeader title="Shop">
+    <p>
+      Hier findest du unsere Pfadi-Merchandise-Artikel. Für Fragen oder einen
+      Anprobe-Termin melde dich bei <a href="mailto:shop@pfadigossau.ch">shop@pfadigossau.ch</a>.
+    </p>
+  </PageHeader>
+
+  <div class="shop-list">
+    {items.map((item) => (
+      <ShopItem
+        Artikel={item.Artikel}
+        Beschreibung={item.Beschreibung}
+        Preis={item.Preis}
+        Bild={item.Bild}
+        Bild2={item.Bild2}
+      />
+    ))}
   </div>
 </Base>
+
+<style>
+  /* Divider between articles, same line as everywhere else */
+  .shop-list > :global(* + *) {
+    border-top: 1px solid var(--color-border);
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import Base from "@/layouts/Base.astro";
+import PageHeader from "@/components/PageHeader.astro";
 import DownloadList from "@/components/DownloadList.astro";
 import client from "@/lib/directus";
 import { readItems } from "@directus/sdk";
@@ -23,13 +24,9 @@ const categories = await client.request(
 ---
 
 <Base title="Downloads">
-  <div class="container page-content" style="padding-top: 2rem">
-    <div style="margin-bottom: 2rem;">
-      <h1>Downloads</h1>
-      <p style="margin-top: 0.5rem;">
-        Hier findest du alle wichtigen Dokumente und Dateien zum Herunterladen.
-      </p>
-    </div>
-    <DownloadList categories={categories} />
-  </div>
+  <PageHeader
+    title="Downloads"
+    subtitle="Hier findest du alle wichtigen Dokumente und Dateien zum Herunterladen."
+  />
+  <DownloadList categories={categories} />
 </Base>

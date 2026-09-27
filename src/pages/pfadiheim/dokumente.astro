@@ -1,0 +1,48 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import DownloadList from '@/components/DownloadList.astro';
+import client from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+// ASSUMPTION: same structure as "download_categories" on /downloads, but a
+// separate collection for the Pfadiheim (like pfadiheim_gallery_categories).
+async function getCategories() {
+  try {
+    return await client.request(
+      readItems('pfadiheim_download_categories' as any, {
+        filter: { status: { _eq: 'published' } },
+        fields: [
+          'id',
+          'name',
+          'files.id',
+          'files.name',
+          'files.sort',
+          'files.file.id',
+          'files.file.type',
+          'files.file.filesize',
+        ],
+        sort: ['sort'],
+      } as any),
+    );
+  } catch (err) {
+    console.error('pfadiheim_download_categories fetch failed:', err);
+    return [];
+  }
+}
+
+const categories = await getCategories();
+---
+
+<Base title="Dokumente Pfadiheim">
+  <PageHeader
+    title="Dokumente"
+    subtitle="Heimbeschreibung und Bedienungsanleitungen zum Pfadiheim."
+  />
+
+  {categories.length > 0 ? (
+    <DownloadList categories={categories} />
+  ) : (
+    <p>Die Dokumente werden zurzeit überarbeitet.</p>
+  )}
+</Base>

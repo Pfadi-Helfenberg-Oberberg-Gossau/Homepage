@@ -1,0 +1,124 @@
+---
+// Team overview: Abteilungsleitung, Stufenleitung of all Stufen, and the
+// other groups. Used on /team and on the Abteilungsleitung Stufe page.
+import PersonCard from '@/components/PersonCard.astro';
+import client, { assetUrl } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+type Person = {
+  first_name: string;
+  last_name: string;
+  nickname: string;
+  photo: string;
+  email: string;
+};
+
+type AbteilungEntry = { group: string; sort: number; funktion?: string; person: Person };
+type StufenleitungEntry = { sort: number; stufe: { name: string; id: number }; person: Person };
+
+const personFields = [
+  'person.first_name',
+  'person.last_name',
+  'person.nickname',
+  'person.photo',
+  'person.email',
+];
+
+const abteilung = (await client.request(readItems('abteilungsleitung', {
+  filter: { status: { _eq: 'published' } },
+  fields: ['group', 'sort', 'funktion', ...personFields],
+  sort: ['group', 'sort'],
+}))) as AbteilungEntry[];
+
+const stufenleitung = (await client.request(readItems('stufenleitung', {
+  filter: { status: { _eq: 'published' } },
+  fields: ['sort', 'stufe.name', 'stufe.id', ...personFields],
+  sort: ['stufe.sort', 'sort'],
+}))) as StufenleitungEntry[];
+
+function groupBy<T>(items: T[], key: (item: T) => string): Record<string, T[]> {
+  return items.reduce((acc: Record<string, T[]>, item) => {
+    (acc[key(item)] ??= []).push(item);
+    return acc;
+  }, {});
+}
+
+const byGroup = groupBy(abteilung, (r) => r.group);
+const byStufe = groupBy(stufenleitung, (r) => r.stufe.name);
+
+// Order and titles of the groups below the Stufenleitung.
+// Adding a new group in Directus only needs a line here.
+const weitereGruppen = [
+  { key: 'materialteam', title: 'Materialteam' },
+  { key: 'elternrat', title: 'Komitee' },
+  { key: 'medienteam', title: 'Medienteam' },
+];
+
+// role = the person's function in this group (Präsident, Kassier, ...), optional
+const toCard = (p: Person, role?: string) => ({
+  name: `${p.first_name} ${p.last_name}`,
+  role,
+  nickname: p.nickname,
+  email: p.email,
+  photo: assetUrl(p.photo),
+});
+---
+
+
+{byGroup['abteilungsleitung'] && (
+  <section class="page-section">
+    <h2 class="page-section__title">Abteilungsleitung</h2>
+    <div class="person-grid">
+      {byGroup['abteilungsleitung'].map((r) => <PersonCard {...toCard(r.person, r.funktion)} />)}
+    </div>
+  </section>
+)}
+
+{stufenleitung.length > 0 && (
+  <section class="page-section">
+    <h2 class="page-section__title">Stufenleitung</h2>
+    <div class="stufen-leitung">
+      {Object.entries(byStufe).map(([stufeName, members]) => (
+        <div>
+          <h3 class="stufen-leitung__title">{stufeName}</h3>
+          <div class="stufen-leitung__people">
+            {members.map((r) => <PersonCard {...toCard(r.person)} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+{weitereGruppen
+  .filter((g) => byGroup[g.key])
+  .map((g) => (
+    <section class="page-section">
+      <h2 class="page-section__title">{g.title}</h2>
+      <div class="person-grid">
+        {byGroup[g.key].map((r) => <PersonCard {...toCard(r.person, r.funktion)} />)}
+      </div>
+    </section>
+  ))}
+
+<style>
+  /* One column per Stufe, people stacked inside it */
+  .stufen-leitung {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    align-items: start;
+  }
+
+  .stufen-leitung__title {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--color-accent);
+    text-align: center;
+  }
+
+  .stufen-leitung__people {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+</style>

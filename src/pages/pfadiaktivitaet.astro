@@ -1,10 +1,9 @@
 ---
 import Base from "@/layouts/Base.astro";
-import client from "@/lib/directus";
+import PageHeader from "@/components/PageHeader.astro";
+import client, { assetUrl } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
-import { Image } from 'astro:assets';
-
-const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+import { Image } from "astro:assets";
 
 const stufen = await client.request(
   readItems("stufen", {
@@ -20,183 +19,160 @@ const stufen = await client.request(
 const programme = await client.request(
   readItems("program", {
     filter: { status: { _eq: "published" } },
-    fields: [
-      "stufe",
-      "Ort",
-      "Startzeit",
-      "Schlusszeit",
-      "Mitnehmen",
-      "Datum",
-      "Enddatum",
-    ],
+    fields: ["stufe", "Ort", "Startzeit", "Schlusszeit", "Mitnehmen", "Datum", "Enddatum"],
   }),
 );
 
-// Match latest program per stufe
+// Latest program per Stufe
 const programByStufe = Object.fromEntries(
   stufen.map((s) => [
     s.name,
     programme
       .filter((p) => p.stufe === s.name)
-      .sort(
-        (a, b) => new Date(b.Datum).getTime() - new Date(a.Datum).getTime(),
-      )[0],
+      .sort((a, b) => new Date(b.Datum).getTime() - new Date(a.Datum).getTime())[0],
   ]),
 );
 
 function formatDate(datum: string, enddatum?: string | null) {
-  const opts: Intl.DateTimeFormatOptions = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  };
+  const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
   const start = new Date(datum).toLocaleDateString("de-CH", opts);
   if (enddatum) {
     const end = new Date(enddatum).toLocaleDateString("de-CH", opts);
-    return `Aktivität vom ${start} bis ${end}`;
+    return `${start} bis ${end}`;
   }
-  return `Aktivität vom ${start}`;
+  return start;
 }
 
 function formatTime(time: string) {
   return time?.slice(0, 5); // "14:00:00" → "14:00"
 }
+
+function formatMitnehmen(value: string | string[]) {
+  return Array.isArray(value) ? value.join(", ") : value;
+}
 ---
 
-<Base title="Programm">
-  <div class="container" style="padding-top: 2rem">
-    <h1 class="page-title">Programm</h1>
-    <div class="stufen-list">
-      {
-        stufen.map((stufe) => {
-          const prog = programByStufe[stufe.name];
-          return (
-            <section class="stufe-section">
-              {stufe.bild_icon && (
-                <Image
-                  class="stufe-icon"
-                  src={`${DIRECTUS_URL}/assets/${stufe.bild_icon}`}
-                  alt={stufe.name}
-                  inferSize
-                />
-              )}
-              <h2 class="stufe-title">{stufe.name}</h2>
+<Base title="Pfadiaktivität">
+  <PageHeader
+    title="Pfadiaktivität"
+    subtitle="Das aktuelle Programm der einzelnen Stufen."
+  />
 
-              {prog ? (
-                <div class="stufe-program">
-                  <p class="program-date">
-                    {formatDate(prog.Datum, prog.Enddatum)}
-                  </p>
-                  <div class="program-details">
-                    {prog.Startzeit && (
-                      <p>
-                        <strong>Startpunkt:</strong>{" "}
-                        {formatTime(prog.Startzeit)} Uhr {prog.Ort}
-                      </p>
-                    )}
-                    {prog.Schlusszeit && (
-                      <p>
-                        <strong>Schlusspunkt:</strong>{" "}
-                        {formatTime(prog.Schlusszeit)} Uhr {prog.Ort}
-                      </p>
-                    )}
-                    {prog.Mitnehmen && (
-                      <p>
-                        <strong>Mitnehmen / Anziehen:</strong>{" "}
-                        {prog.Mitnehmen && (
-                          <p>
-                            <strong>Mitnehmen / Anziehen:</strong>{" "}
-                            {Array.isArray(prog.Mitnehmen)
-                              ? prog.Mitnehmen.join(", ")
-                              : prog.Mitnehmen}
-                          </p>
-                        )}
-                      </p>
-                    )}
+  <div class="programm-grid">
+    {stufen.map((stufe) => {
+      const prog = programByStufe[stufe.name];
+      const icon = assetUrl(stufe.bild_icon);
+      return (
+        <article class="programm">
+          {icon && <Image class="programm__icon" src={icon} alt="" inferSize />}
+          <h2 class="programm__title">{stufe.name}</h2>
+
+          {prog ? (
+            <>
+              <p class="programm__date">{formatDate(prog.Datum, prog.Enddatum)}</p>
+              <dl class="programm__details">
+                {prog.Startzeit && (
+                  <div>
+                    <dt>Startpunkt</dt>
+                    <dd>{formatTime(prog.Startzeit)} Uhr, {prog.Ort}</dd>
                   </div>
-                  {stufe.email && (
-                    <div class="program-contact">
-                      <p>
-                        <strong>Abmelden und bei Fragen</strong>
-                      </p>
-                      <p>
-                        Mail:{" "}
-                        <a href={`mailto:${stufe.email}`}>{stufe.email}</a>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p class="no-program">Kein aktuelles Programm vorhanden.</p>
-              )}
-            </section>
-          );
-        })
-      }
-    </div>
+                )}
+                {prog.Schlusszeit && (
+                  <div>
+                    <dt>Schlusspunkt</dt>
+                    <dd>{formatTime(prog.Schlusszeit)} Uhr, {prog.Ort}</dd>
+                  </div>
+                )}
+                {prog.Mitnehmen && (
+                  <div>
+                    <dt>Mitnehmen / Anziehen</dt>
+                    <dd>{formatMitnehmen(prog.Mitnehmen)}</dd>
+                  </div>
+                )}
+              </dl>
+            </>
+          ) : (
+            <p class="programm__empty">Kein aktuelles Programm vorhanden.</p>
+          )}
+
+          {stufe.email && (
+            <p class="programm__contact">
+              Abmelden und bei Fragen:<br />
+              <a href={`mailto:${stufe.email}`}>{stufe.email}</a>
+            </p>
+          )}
+        </article>
+      );
+    })}
   </div>
 </Base>
 
 <style>
-  .page-title {
-    text-align: center;
-    margin-bottom: var(--spacing-lg);
+  .programm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    align-items: stretch;
   }
-  .stufen-list {
+
+  .programm {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xl);
-    max-width: 720px;
-    margin: 0 auto;
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
   }
-  .stufe-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-bottom: var(--spacing-xl);
-    border-bottom: 1px solid var(--color-border);
-  }
-  .stufe-section:last-child {
-    border-bottom: none;
-  }
-  .stufe-icon {
-    width: 250px;
-    height: 250px;
+
+  :global(.programm__icon) {
+    width: 140px;
+    height: 140px;
     object-fit: contain;
+    align-self: center;
     margin-bottom: var(--spacing-sm);
   }
-  .stufe-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-text);
-    margin-bottom: var(--spacing-sm);
+
+  .programm__title {
+    font-size: var(--font-size-2xl);
+    text-align: center;
+    margin: 0 0 var(--spacing-xs);
   }
-  .program-date {
+
+  .programm__date {
     font-weight: 700;
-    margin-bottom: var(--spacing-md);
+    text-align: center;
+    margin: 0 auto var(--spacing-md);
   }
-  .program-details {
-    text-align: left;
-    width: 100%;
+
+  .programm__details {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-sm);
+    margin: 0 0 var(--spacing-md);
   }
-  .program-details p {
-    line-height: 1.6;
+
+  .programm__details dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  .program-contact {
-    text-align: left;
-    width: 100%;
-    margin-top: var(--spacing-sm);
+
+  .programm__details dd {
+    margin: 0;
   }
-  .program-contact a {
-    color: var(--color-text);
-  }
-  .no-program {
-    color: var(--color-accent);
+
+  .programm__empty {
+    color: var(--color-text-muted);
     font-style: italic;
+    text-align: center;
+    margin: 0 auto var(--spacing-md);
+  }
+
+  /* Pinned to the bottom so the contact lines up across the cards */
+  .programm__contact {
+    margin-top: auto;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--font-size-sm);
   }
 </style>

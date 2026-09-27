@@ -9,6 +9,7 @@ interface Props {
 }
 
 const { title, description = 'Pfadi Gossau' } = Astro.props;
+const hasHero = Astro.slots.has('hero');
 ---
 
 <html lang="de">
@@ -22,7 +23,12 @@ const { title, description = 'Pfadi Gossau' } = Astro.props;
   <body>
     <Header />
     <main class="main-content">
-      <slot />
+      <!-- Full-bleed area above the content, e.g. <PageHero slot="hero" /> -->
+      <slot name="hero" />
+      <!-- Everything else is constrained to the same width on every page -->
+      <div class:list={['container', 'page-body', { 'page-body--after-hero': hasHero }]}>
+        <slot />
+      </div>
     </main>
     <Footer />
   </body>

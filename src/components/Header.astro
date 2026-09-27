@@ -32,7 +32,12 @@ const navItems: NavItem[] = [
   { label: "Kontakt", href: "/kontakt" },
 ];
 
-const currentPath = Astro.url.pathname;
+// Normalise trailing slashes so "/stufen/" and "/stufen" match
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+// Top-level items are also active on their subpages (Stufen on /stufen/biberstufe)
+const isActive = (href: string) =>
+  currentPath === href || currentPath.startsWith(`${href}/`);
 ---
 
 <header>
@@ -47,7 +52,7 @@ const currentPath = Astro.url.pathname;
             <li class={item.children ? "has-dropdown" : ""}>
               <a
                 href={item.href}
-                class={currentPath === item.href ? "active" : ""}
+                class={isActive(item.href) ? "active" : ""}
               >
                 {item.label}
                 {item.children && <span class="chevron">▾</span>}
@@ -294,7 +299,7 @@ const currentPath = Astro.url.pathname;
 
     toggle.setAttribute(
       "aria-label",
-      isOpen ? "Menü öffnen" : "Menü schließen",
+      isOpen ? "Menü öffnen" : "Menü schliessen",
     );
     toggle.textContent = isOpen ? "☰" : "✕";
   });

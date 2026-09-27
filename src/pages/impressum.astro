@@ -3,11 +3,12 @@ import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import { readSingletonSafe } from '@/lib/directus';
 
-const seite = await readSingletonSafe<{ inhalt?: string }>('Datenschutz', ['inhalt']);
+// ASSUMPTION: singleton "Impressum" with a WYSIWYG field "inhalt"
+const seite = await readSingletonSafe<{ inhalt?: string }>('Impressum', ['inhalt']);
 ---
 
-<Base title="Datenschutzerklärung">
-  <PageHeader title="Datenschutzerklärung" />
+<Base title="Impressum">
+  <PageHeader title="Impressum" />
 
   {seite?.inhalt ? (
     <div class="prose" set:html={seite.inhalt} />

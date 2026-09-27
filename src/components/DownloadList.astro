@@ -1,5 +1,10 @@
 ---
 import { File, Download } from '@lucide/astro';
+
+interface Props {
+  categories: any[];
+}
+
 const { categories } = Astro.props;
 const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
 
@@ -19,78 +24,70 @@ function formatFilesize(bytes: number): string {
 ---
 
 {categories.map((category: any) => (
-  <section class="download-category">
-    <h2 class="download-category__title">{category.name}</h2>
+  <section class="page-section">
+    <h2 class="page-section__title">{category.name}</h2>
     <ul class="download-list">
       {category.files
         ?.filter((f: any) => f.file)
         .sort((a: any, b: any) => a.sort - b.sort)
         .map((f: any) => (
-          <li class="download-item">
-            <a
-              class="download-card"
-              href={`${DIRECTUS_URL}/assets/${f.file.id}?download`}
-            >
-              <div class="download-card__icon">
-                <File size={24} />
-              </div>
-              <div class="download-card__info">
+          <li>
+            <a class="download-card" href={`${DIRECTUS_URL}/assets/${f.file.id}?download`}>
+              <span class="download-card__icon"><File size={24} /></span>
+              <span class="download-card__info">
                 <span class="download-card__name">{f.name}</span>
-                <div class="download-card__meta">
+                <span class="download-card__meta">
                   <span class="download-card__type">{getFileType(f.file.type)}</span>
                   {f.file.filesize && (
                     <span class="download-card__size">{formatFilesize(f.file.filesize)}</span>
                   )}
-                </div>
-              </div>
-              <div class="download-card__action">
-                <Download size={18} />
-              </div>
+                </span>
+              </span>
+              <span class="download-card__action"><Download size={18} /></span>
             </a>
           </li>
-        ))
-      }
+        ))}
     </ul>
   </section>
 ))}
 
 <style>
-  .download-category {
-    margin-bottom: 3rem;
-  }
-
-  .download-category__title {
-    margin-bottom: 1rem;
-  }
-
   .download-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--spacing-xs);
+    max-width: 720px;
+  }
+
+  .download-list li {
+    margin: 0;
   }
 
   .download-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--color-border, #e5e7eb);
-    border-radius: 0.5rem;
+    gap: var(--spacing-sm);
+    padding: 0.875rem var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
     text-decoration: none;
     color: inherit;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
   }
 
   .download-card:hover {
-    background: var(--color-surface-hover, #f9fafb);
-    border-color: var(--color-border-hover, #d1d5db);
+    background-color: var(--color-border-light);
+    border-color: var(--color-accent);
+    text-decoration: none;
+    opacity: 1;
   }
 
   .download-card__icon {
-    color: var(--color-primary, #6366f1);
+    display: flex;
+    color: var(--color-accent);
     flex-shrink: 0;
   }
 
@@ -109,32 +106,33 @@ function formatFilesize(bytes: number): string {
 
   .download-card__meta {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--spacing-xs);
     margin-top: 0.125rem;
   }
 
   .download-card__type {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-primary, #6366f1);
-    background: var(--color-primary-light, #eef2ff);
+    color: var(--color-primary);
+    background: var(--color-border-light);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }
 
   .download-card__size {
     font-size: 0.75rem;
-    color: var(--color-text-muted, #6b7280);
+    color: var(--color-text-muted);
     align-self: center;
   }
 
   .download-card__action {
-    color: var(--color-text-muted, #6b7280);
+    display: flex;
+    color: var(--color-text-muted);
     flex-shrink: 0;
-    transition: color 0.15s;
+    transition: color var(--transition-fast);
   }
 
   .download-card:hover .download-card__action {
-    color: var(--color-primary, #6366f1);
+    color: var(--color-primary);
   }
 </style>

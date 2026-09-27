@@ -1,7 +1,8 @@
 ---
 import Base from "@/layouts/Base.astro";
-import client from "@/lib/directus";
-import { readItems, readSingleton } from "@directus/sdk";
+import PageHeader from "@/components/PageHeader.astro";
+import client, { readSingletonSafe } from "@/lib/directus";
+import { readItems } from "@directus/sdk";
 
 async function getCategories() {
   try {
@@ -25,21 +26,12 @@ async function getCategories() {
   }
 }
 
-async function getPreiseText() {
-  try {
-    return await client.request(
-      readSingleton("pfadiheim_price_inclusions", {
-        fields: ["include_overnight", "include_day", "not_included"],
-      }),
-    );
-  } catch (err) {
-    console.error("pfadiheim_price_inclusions fetch failed:", err);
-    return null;
-  }
-}
-
 const categories = await getCategories();
-const preiseText = await getPreiseText();
+const preiseText = await readSingletonSafe<{
+  include_overnight?: string;
+  include_day?: string;
+  not_included?: string;
+}>("pfadiheim_price_inclusions", ["include_overnight", "include_day", "not_included"]);
 
 function formatPrice(value: number | null | undefined): string {
   if (value === null || value === undefined) return "–";
@@ -47,94 +39,77 @@ function formatPrice(value: number | null | undefined): string {
 }
 ---
 
-<Base title="Preise">
-  <main class="main-content">
-    <div class="container">
-      <div class="preise-wrapper">
-        <h1>Preise</h1>
-        <p>Auszug aus der Preisliste (gültig ist nur die vollständige Preisliste)</p>
+<Base title="Preise Pfadiheim">
+  <PageHeader
+    title="Preise"
+    subtitle="Auszug aus der Preisliste. Gültig ist nur die vollständige Preisliste."
+  />
 
-        <section class="preise-section">
-          <h2>Vermietung für Lager und Weekend mit Übernachtung</h2>
-          <div class="preise-table-scroll">
-            <table class="preise-table">
-              <thead>
-                <tr>
-                  <th>Preis pro Person</th>
-                  <th>Kurzlager<br />1–3 Nächte</th>
-                  <th>Lager über<br />3 Nächte</th>
-                  <th>Mindest-<br />Pauschale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((category: any) => (
-                  <tr>
-                    <td>{category.name}</td>
-                    <td>{formatPrice(category.price_short_camp)}</td>
-                    <td>{formatPrice(category.price_long_camp)}</td>
-                    <td>{formatPrice(category.price_minimum_flat)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {preiseText?.include_overnight && (
-            <div class="preise-included" set:html={preiseText.include_overnight} />
-          )}
-        </section>
-
-        <section class="preise-section">
-          <h2>Vermietung für andere Anlässe ohne Übernachtung</h2>
-          <div class="preise-table-scroll">
-            <table class="preise-table">
-              <thead>
-                <tr>
-                  <th>Preis pro Anlass</th>
-                  <th>Pauschale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((category: any) => (
-                  <tr>
-                    <td>{category.name}</td>
-                    <td>{formatPrice(category.price_day_event)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {preiseText?.include_day && (
-            <div class="preise-included" set:html={preiseText.include_day} />
-          )}
-        </section>
-
-        {preiseText?.not_included && (
-          <section class="preise-section">
-            <div class="preise-not-included" set:html={preiseText.not_included} />
-          </section>
-        )}
-      </div>
+  <section class="page-section">
+    <h2 class="page-section__title">Lager und Weekend mit Übernachtung</h2>
+    <div class="preise-table-scroll">
+      <table class="preise-table">
+        <thead>
+          <tr>
+            <th scope="col">Preis pro Person</th>
+            <th scope="col">Kurzlager<br />1–3 Nächte</th>
+            <th scope="col">Lager über<br />3 Nächte</th>
+            <th scope="col">Mindest&shy;pauschale</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category: any) => (
+            <tr>
+              <th scope="row">{category.name}</th>
+              <td>{formatPrice(category.price_short_camp)}</td>
+              <td>{formatPrice(category.price_long_camp)}</td>
+              <td>{formatPrice(category.price_minimum_flat)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  </main>
+    {preiseText?.include_overnight && (
+      <div class="prose prose--small preise-note" set:html={preiseText.include_overnight} />
+    )}
+  </section>
+
+  <section class="page-section">
+    <h2 class="page-section__title">Andere Anlässe ohne Übernachtung</h2>
+    <div class="preise-table-scroll">
+      <table class="preise-table">
+        <thead>
+          <tr>
+            <th scope="col">Preis pro Anlass</th>
+            <th scope="col">Pauschale</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category: any) => (
+            <tr>
+              <th scope="row">{category.name}</th>
+              <td>{formatPrice(category.price_day_event)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    {preiseText?.include_day && (
+      <div class="prose prose--small preise-note" set:html={preiseText.include_day} />
+    )}
+  </section>
+
+  {preiseText?.not_included && (
+    <section class="page-section">
+      <div class="prose prose--small" set:html={preiseText.not_included} />
+    </section>
+  )}
 </Base>
 
 <style>
-  .preise-wrapper {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--spacing-lg) 0;
-  }
-
-  .preise-section {
-    margin-top: var(--spacing-md, 3rem);
-  }
-
-  .preise-section h2 {
-    margin-bottom: var(--spacing-sm);
-  }
-
   .preise-table-scroll {
     overflow-x: auto;
+    max-width: 800px;
   }
 
   .preise-table {
@@ -150,26 +125,18 @@ function formatPrice(value: number | null | undefined): string {
     border-bottom: 1px solid var(--color-border);
   }
 
-  .preise-table th {
+  .preise-table thead th {
     font-weight: 600;
     color: var(--color-text-muted);
-    background-color: var(--color-surface, #f9fafb);
+    background-color: var(--color-border-light);
+    vertical-align: bottom;
   }
 
-  .preise-included,
-  .preise-not-included {
+  .preise-table tbody th {
+    font-weight: 600;
+  }
+
+  .preise-note {
     margin-top: var(--spacing-sm);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-  }
-
-  .preise-included :global(p),
-  .preise-not-included :global(p) {
-    margin-bottom: var(--spacing-xs, 0.5rem);
-  }
-
-  .preise-included :global(ul),
-  .preise-not-included :global(ul) {
-    padding-left: 1.25rem;
   }
 </style>

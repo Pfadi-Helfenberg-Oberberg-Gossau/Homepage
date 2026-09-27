@@ -1,7 +1,8 @@
 ---
 import Base from '@/layouts/Base.astro';
-import StufeCard from '@/components/StufeCard.astro';
-import client from '@/lib/directus';
+import PageHeader from '@/components/PageHeader.astro';
+import Card from '@/components/Card.astro';
+import client, { assetUrl } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 const stufen = await client.request(readItems('stufen', {
@@ -12,27 +13,18 @@ const stufen = await client.request(readItems('stufen', {
 ---
 
 <Base title="Unsere Stufen">
-  <div class="container">
-    <div class="stufen-grid">
-      {stufen.map(stufe => (
-        <StufeCard
-          name={stufe.name}
-          age_range={stufe.age_range}
-          description={stufe.description}
-          leitsatz={stufe.leitsatz}
-          bild_card={stufe.bild_card}
-          slug={stufe.name.toLowerCase()}
-        />
-      ))}
-    </div>
+  <PageHeader title="Unsere Stufen" />
+
+  <div class="card-grid">
+    {stufen.map((stufe) => (
+      <Card
+        href={`/stufen/${stufe.name.toLowerCase()}`}
+        title={stufe.name}
+        image={assetUrl(stufe.bild_card)}
+        eyebrow={stufe.age_range}
+        description={stufe.description}
+        quote={stufe.leitsatz}
+      />
+    ))}
   </div>
 </Base>
-
-<style>
-  .stufen-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) 0;
-  }
-</style>

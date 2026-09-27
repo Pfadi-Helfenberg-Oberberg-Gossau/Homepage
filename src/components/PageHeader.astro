@@ -1,33 +1,41 @@
 ---
+// Plain page header for pages without a hero image.
+// Lead text: pass `subtitle` for plain text, or use the default slot for
+// markup such as links:
+//   <PageHeader title="Shop"><p>Fragen an <a href="…">…</a></p></PageHeader>
 interface Props {
   title: string;
   subtitle?: string;
 }
 
 const { title, subtitle } = Astro.props;
+const hasLead = Boolean(subtitle) || Astro.slots.has('default');
 ---
 
-<div class="page-header">
-  <div class="container">
-    <h1>{title}</h1>
-    {subtitle && <p class="subtitle">{subtitle}</p>}
-  </div>
-</div>
+<header class="page-header">
+  <h1>{title}</h1>
+  {hasLead && (
+    <div class="page-header__lead">
+      {subtitle && <p>{subtitle}</p>}
+      <slot />
+    </div>
+  )}
+</header>
 
 <style>
   .page-header {
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-md) 0;
     border-bottom: 1px solid var(--color-border);
     margin-bottom: var(--spacing-md);
   }
 
   h1 {
-    font-size: 2.5rem;
+    margin: 0;
   }
 
-  .subtitle {
+  .page-header__lead {
     margin-top: var(--spacing-xs);
-    opacity: 0.7;
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
   }
 </style>
