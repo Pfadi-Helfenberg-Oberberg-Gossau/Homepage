@@ -9,6 +9,17 @@
     <input type="text" id="organisation" name="organisation" required />
   </div>
 
+  <div class="hp" aria-hidden="true">
+    <label for="website">Website</label>
+    <input
+      type="text"
+      id="website"
+      name="website"
+      tabindex="-1"
+      autocomplete="off"
+    />
+  </div>
+
   <div class="form-group">
     <label for="anlass">Art des Anlasses *</label>
     <input type="text" id="anlass" name="anlass" required />
@@ -17,41 +28,90 @@
   <div class="form-row">
     <div class="form-group">
       <label for="vorname">Vorname *</label>
-      <input type="text" id="vorname" name="vorname" placeholder="Vorname" required autocomplete="given-name" />
+      <input
+        type="text"
+        id="vorname"
+        name="vorname"
+        placeholder="Vorname"
+        required
+        autocomplete="given-name"
+      />
     </div>
 
     <div class="form-group">
       <label for="nachname">Nachname *</label>
-      <input type="text" id="nachname" name="nachname" placeholder="Nachname" required autocomplete="family-name" />
+      <input
+        type="text"
+        id="nachname"
+        name="nachname"
+        placeholder="Nachname"
+        required
+        autocomplete="family-name"
+      />
     </div>
   </div>
 
   <div class="form-group">
     <label for="adresse">Adresse *</label>
-    <input type="text" id="adresse" name="adresse" placeholder="Strasse" required autocomplete="street-address" />
+    <input
+      type="text"
+      id="adresse"
+      name="adresse"
+      placeholder="Strasse"
+      required
+      autocomplete="street-address"
+    />
   </div>
 
   <div class="form-row">
     <div class="form-group form-group--narrow">
       <label for="plz">Postleitzahl *</label>
-      <input type="text" id="plz" name="plz" placeholder="Postleitzahl" required inputmode="numeric" autocomplete="postal-code" />
+      <input
+        type="text"
+        id="plz"
+        name="plz"
+        placeholder="Postleitzahl"
+        required
+        inputmode="numeric"
+        autocomplete="postal-code"
+      />
     </div>
 
     <div class="form-group">
       <label for="stadt">Stadt *</label>
-      <input type="text" id="stadt" name="stadt" placeholder="Stadt" required autocomplete="address-level2" />
+      <input
+        type="text"
+        id="stadt"
+        name="stadt"
+        placeholder="Stadt"
+        required
+        autocomplete="address-level2"
+      />
     </div>
   </div>
 
   <div class="form-row">
     <div class="form-group">
       <label for="telefon">Telefon *</label>
-      <input type="tel" id="telefon" name="telefon" placeholder="079 123 45 67" required autocomplete="tel" />
+      <input
+        type="tel"
+        id="telefon"
+        name="telefon"
+        placeholder="079 123 45 67"
+        required
+        autocomplete="tel"
+      />
     </div>
 
     <div class="form-group">
       <label for="email">Email *</label>
-      <input type="email" id="email" name="email" required autocomplete="email" />
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        autocomplete="email"
+      />
     </div>
   </div>
 
@@ -83,12 +143,16 @@
   </div>
 
   <p class="form-hint">
-    Mit dem Absenden dieses Formulars erklären Sie sich mit unserer <a href="/datenschutz">Datenschutzerklärung</a> einverstanden.
+    Mit dem Absenden dieses Formulars erklären Sie sich mit unserer <a
+      href="/datenschutz">Datenschutzerklärung</a
+    > einverstanden.
   </p>
 
   <div class="form-checkbox">
     <input type="checkbox" id="wohnsitz" name="wohnsitz" required />
-    <label for="wohnsitz">Mein Wohnsitz respektive mein Firmensitz ist in der Schweiz *</label>
+    <label for="wohnsitz"
+      >Mein Wohnsitz respektive mein Firmensitz ist in der Schweiz *</label
+    >
   </div>
 
   <div class="form-status" id="form-status" aria-live="polite"></div>
@@ -97,38 +161,40 @@
 </form>
 
 <script>
-  const form = document.getElementById('buchung-form') as HTMLFormElement;
-  const status = document.getElementById('form-status') as HTMLDivElement;
-  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const form = document.getElementById("buchung-form") as HTMLFormElement;
+  const status = document.getElementById("form-status") as HTMLDivElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Wird gesendet…';
-    status.textContent = '';
-    status.className = 'form-status';
+    submitBtn.textContent = "Wird gesendet…";
+    status.textContent = "";
+    status.className = "form-status";
 
     try {
       const formData = new FormData(form);
-      const response = await fetch('/api/booking', {
-        method: 'POST',
+      const response = await fetch("/api/booking", {
+        method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        status.textContent = 'Ihre Buchungsanfrage wurde erfolgreich gesendet. Wir melden uns baldmöglichst bei Ihnen.';
-        status.classList.add('form-status--success');
+        status.textContent =
+          "Ihre Buchungsanfrage wurde erfolgreich gesendet. Wir melden uns baldmöglichst bei Ihnen.";
+        status.classList.add("form-status--success");
         form.reset();
       } else {
-        throw new Error('Fehler beim Senden');
+        throw new Error("Fehler beim Senden");
       }
     } catch {
-      status.textContent = 'Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-      status.classList.add('form-status--error');
+      status.textContent =
+        "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+      status.classList.add("form-status--error");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Senden';
+      submitBtn.textContent = "Senden";
     }
   });
 </script>

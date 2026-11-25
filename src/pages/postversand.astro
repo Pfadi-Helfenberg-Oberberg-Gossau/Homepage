@@ -1,0 +1,134 @@
+---
+// ============================================================================
+// Postversand-Wunsch: members choose which documents they also want by post.
+// The form posts to /api/post-preferences, which forwards a JSON payload to
+// the Hermes intake mailbox. Hermes then sends the ownership confirmation.
+// ============================================================================
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+
+const TITLE = 'Dokumente per Post';
+
+// key = MailingCategory.Key in Hermes, label = what members see
+// TODO: replace with the real keys from the MailingCategory seed data
+const categories: { key: string; label: string }[] = [
+  { key: 'receiveSectionInfo', label: 'Stufeninfos' },
+  { key: 'receiveAbteilungsInfo', label: 'Abteilungsinfos' },
+  { key: 'receiveCampInfo', label: 'Lagerinfos' },
+  { key: 'receiveEmergencyForm', label: 'Notfallblatt' },
+  { key: 'receiveCampRegistration', label: 'Lageranmeldung' },
+];
+---
+
+<Base title={TITLE}>
+  <PageHeader
+    title={TITLE}
+    subtitle="Alle Informationen erhältst du per E-Mail. Hier kannst du angeben, welche Dokumente du zusätzlich auf Papier möchtest."
+  />
+
+  <section class="page-section">
+    <form id="post-form" class="form" novalidate>
+      <p class="form-hint">Gib die Angaben des Pfadimitglieds an. Füllst du das Formular für dein Kind aus, also den Namen deines Kindes.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="post-first-name">Vorname</label>
+          <input type="text" id="post-first-name" name="firstName" required maxlength="100" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label for="post-last-name">Nachname</label>
+          <input type="text" id="post-last-name" name="lastName" required maxlength="100" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="post-nickname">Pfadiname (optional)</label>
+        <input type="text" id="post-nickname" name="nickname" maxlength="100" autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label for="post-email">E-Mail-Adresse</label>
+        <input type="email" id="post-email" name="email" required maxlength="254" autocomplete="email" />
+        <p class="form-hint">Verwende die Adresse, die bei der Pfadi hinterlegt ist. Wir senden dir einen Bestätigungslink an diese Adresse.</p>
+      </div>
+
+      <fieldset class="form-fieldset">
+        <legend>Diese Dokumente möchte ich zusätzlich per Post erhalten</legend>
+        <p class="form-hint">Was du nicht ankreuzt, erhältst du nur per E-Mail. Deine Auswahl ersetzt eine frühere Auswahl vollständig.</p>
+        {categories.map((category) => (
+          <div class="form-checkbox">
+            <input type="checkbox" id={`category-${category.key}`} name="postInformations" value={category.key} />
+            <label for={`category-${category.key}`}>{category.label}</label>
+          </div>
+        ))}
+      </fieldset>
+
+      <div class="hp" aria-hidden="true">
+        <label for="post-website">Website</label>
+        <input type="text" id="post-website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div id="post-form-status" class="form-status" role="status" aria-live="polite"></div>
+      <button type="submit" id="post-submit-btn" class="btn">Senden</button>
+    </form>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('post-form') as HTMLFormElement;
+  const status = document.getElementById('post-form-status') as HTMLDivElement;
+  const submitBtn = document.getElementById('post-submit-btn') as HTMLButtonElement;
+
+  const GENERIC_ERROR = 'Beim Senden ist ein Fehler aufgetreten. Bitte versuche es später erneut.';
+
+  function showStatus(message: string, kind: 'success' | 'error') {
+    status.textContent = message;
+    status.className = `form-status form-status--${kind}`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Find the first required field that is empty or invalid
+    const invalidField = form.querySelector<HTMLInputElement>('input:invalid');
+    if (invalidField) {
+      const message = invalidField.type === 'email'
+        ? 'Bitte gib eine gültige E-Mail-Adresse ein.'
+        : 'Bitte fülle alle Pflichtfelder aus.';
+      showStatus(message, 'error');
+      invalidField.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Wird gesendet…';
+    status.textContent = '';
+    status.className = 'form-status';
+
+    try {
+      const response = await fetch('/api/post-preferences', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+
+      if (response.ok) {
+        showStatus(
+          'Fast geschafft! Wir haben dir eine E-Mail geschickt. Bitte bestätige deine Adresse über den Link darin, erst dann wird deine Auswahl übernommen.',
+          'success'
+        );
+        form.reset();
+        return;
+      }
+
+      // Show the server's validation message (400) if there is one
+      const body = await response.json().catch(() => null);
+      const message = response.status === 400 && body?.error ? body.error : GENERIC_ERROR;
+      showStatus(message, 'error');
+    } catch {
+      showStatus(GENERIC_ERROR, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Senden';
+    }
+  });
+</script>
