@@ -25,7 +25,11 @@ const navItems: NavItem[] = [
       { label: "Piostufe", href: "/stufen/piostufe" },
     ],
   },
-  { label: "Über uns", href: "/ueber-uns" },
+  { label: "Über uns", href: "/ueber-uns",
+    children: [
+      { label: "Geschichte", href: "/geschichte" },
+    ]
+  },
   { 
     label: "Pfadiheim", 
     href: "/pfadiheim",

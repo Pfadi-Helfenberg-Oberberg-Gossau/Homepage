@@ -1,4 +1,4 @@
-import { createDirectus, rest, staticToken, readSingleton } from '@directus/sdk';
+import { createDirectus, rest, staticToken, readSingleton, readItems } from '@directus/sdk';
 
 const client = createDirectus(import.meta.env.DIRECTUS_URL)
   .with(staticToken(import.meta.env.DIRECTUS_TOKEN))
@@ -45,5 +45,19 @@ export async function readSingletonSafe<T = Record<string, any>>(
   } catch (err) {
     console.warn(`[directus] ${collection}: ${directusError(err)}`);
     return null;
+  }
+}
+
+export async function readItemsSafe<T = Record<string, any>>(
+  collection: string,
+  query: { fields: string[]; sort?: string[]; filter?: Record<string, any> },
+): Promise<T[]> {
+  try {
+    return (await client.request(
+      readItems(collection as any, { ...query, limit: -1 } as any),
+    )) as T[];
+  } catch (err) {
+    console.warn(`[directus] ${collection}: ${directusError(err)}`);
+    return [];
   }
 }

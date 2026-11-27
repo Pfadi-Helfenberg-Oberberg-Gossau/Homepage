@@ -1,0 +1,174 @@
+---
+// ============================================================================
+// Geschichte: timeline of the club's history, newest first.
+// Entries come from the Directus collection "geschichte"
+// (fields: jahr, datum, text, highlight, sort).
+// ============================================================================
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import { readItemsSafe } from '@/lib/directus';
+
+const TITLE = 'Geschichte';
+
+interface Ereignis {
+  jahr: number;
+  datum?: string | null;
+  text: string;
+  highlight?: boolean;
+}
+
+const ereignisse = await readItemsSafe<Ereignis>('geschichte', {
+  fields: ['jahr', 'datum', 'text', 'highlight'],
+  sort: ['-jahr', 'sort'],
+  filter: { status: { _eq: 'published' } },
+});
+
+// Group by year, keeping the newest-first order
+const jahre = [...new Set(ereignisse.map((e) => e.jahr))].map((jahr) => ({
+  jahr,
+  eintraege: ereignisse.filter((e) => e.jahr === jahr),
+}));
+
+const gruendung = 1924;
+const jahreSeitGruendung = new Date().getFullYear() - gruendung;
+---
+
+<Base title={TITLE}>
+  <PageHeader
+    title={TITLE}
+    subtitle={`Seit ${gruendung} ist die Pfadi in Gossau unterwegs. Über ${jahreSeitGruendung} Jahre in Stichworten.`}
+  />
+
+  <section class="page-section">
+    {jahre.length > 0 ? (
+      <ol class="timeline">
+        {jahre.map((gruppe) => (
+          <li class="timeline__year">
+            <h2 class="timeline__year-label">{gruppe.jahr}</h2>
+            <ul class="timeline__entries">
+              {gruppe.eintraege.map((eintrag) => (
+                <li class:list={['timeline__entry', { 'timeline__entry--highlight': eintrag.highlight }]}>
+                  {eintrag.datum && <span class="timeline__date">{eintrag.datum}</span>}
+                  <p class="timeline__text">{eintrag.text}</p>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p>Dieser Inhalt wird zurzeit überarbeitet.</p>
+    )}
+  </section>
+</Base>
+
+<style>
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: 720px;
+    position: relative;
+  }
+
+  /* Vertical line */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 5.5rem;
+    width: 2px;
+    background-color: var(--color-border);
+  }
+
+  .timeline__year {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    column-gap: 2rem;
+    padding-bottom: var(--spacing-sm);
+  }
+
+  .timeline__year-label {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .timeline__entries {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .timeline__entry {
+    position: relative;
+    padding-left: 0.5rem;
+  }
+
+  /* Dot on the line */
+  .timeline__entry::before {
+    content: '';
+    position: absolute;
+    left: calc(-1rem - 5px);
+    top: 0.55rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-background);
+    border: 2px solid var(--color-border);
+  }
+
+  .timeline__entry--highlight::before {
+    width: 14px;
+    height: 14px;
+    left: calc(-1rem - 7px);
+    top: 0.45rem;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .timeline__entry--highlight .timeline__text {
+    font-weight: 600;
+  }
+
+  .timeline__date {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .timeline__text {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    .timeline::before {
+      left: 0.4rem;
+    }
+
+    .timeline__year {
+      grid-template-columns: 1fr;
+      padding-left: 1.5rem;
+    }
+
+    .timeline__year-label {
+      text-align: left;
+    }
+
+    .timeline__entry::before {
+      left: calc(-1.1rem - 5px);
+    }
+
+    .timeline__entry--highlight::before {
+      left: calc(-1.1rem - 7px);
+    }
+  }
+</style>
